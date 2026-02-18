@@ -1,5 +1,9 @@
 const express = require('express');
+const connectDB = require('./config/db');
 const cors = require('cors');
+
+// Initialize DB connection
+connectDB();
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
