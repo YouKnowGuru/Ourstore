@@ -13,7 +13,7 @@ export default [
     files: ['**/*.{ts,tsx}'],
     plugins: {
       '@typescript-eslint': tsPlugin,
-      'next': nextPlugin,
+      '@next/next': nextPlugin,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
@@ -38,7 +38,7 @@ export default [
       ...reactHooks.configs.recommended.rules,
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
-      'no-undef': 'off', // TypeScript handles this better
+      'no-undef': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
