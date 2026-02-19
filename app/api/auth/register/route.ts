@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
-import { generateTokens } from '@/lib/services/tokenService';
 import { generateOTP } from '@/lib/utils/helpers';
 import { sendOTPEmail } from '@/lib/services/emailService';
 

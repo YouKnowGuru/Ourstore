@@ -5,7 +5,7 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 
 // GET /api/products/categories
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         await connectDB();
         const categories = await Product.distinct('category', { status: 'active' });
