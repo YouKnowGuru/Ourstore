@@ -25,17 +25,7 @@ import { useProducts } from '@/lib/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import { debounce } from '@/lib/helpers';
 
-const FilterContent = ({
-    categories,
-    selectedCategory,
-    setSelectedCategory,
-    priceRange,
-    setPriceRange,
-    isCustomizable,
-    setIsCustomizable,
-    hasActiveFilters,
-    clearFilters
-}: {
+interface FilterContentProps {
     categories: string[];
     selectedCategory: string;
     setSelectedCategory: (val: string) => void;
@@ -45,7 +35,19 @@ const FilterContent = ({
     setIsCustomizable: (val: boolean) => void;
     hasActiveFilters: boolean;
     clearFilters: () => void;
-}) => (
+}
+
+const FilterContent = ({
+    categories,
+    selectedCategory,
+    setSelectedCategory,
+    priceRange,
+    setPriceRange,
+    isCustomizable,
+    setIsCustomizable,
+    hasActiveFilters,
+    clearFilters,
+}: FilterContentProps) => (
     <div className="space-y-6">
         {/* Categories */}
         <div>
@@ -101,6 +103,18 @@ const FilterContent = ({
     </div>
 );
 
+interface ProductParams {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    search?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    isCustomizable?: boolean;
+}
+
 const ProductsContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -132,7 +146,6 @@ const ProductsContent = () => {
     );
 
     const updateSearchParams = useCallback(() => {
-        // Next.js approach to update URL params
         const params = new URLSearchParams();
         if (searchQuery) params.set('search', searchQuery);
         if (selectedCategory) params.set('category', selectedCategory);
@@ -145,10 +158,9 @@ const ProductsContent = () => {
         router.push(`/products?${params.toString()}`);
     }, [searchQuery, selectedCategory, priceRange, isCustomizable, sortBy, sortOrder, router]);
 
-    // ✅ FIRST declare the function
     const fetchProducts = useCallback(() => {
         const debouncedGet = debounce(() => {
-            const params: any = {
+            const params: ProductParams = {
                 page: 1,
                 limit: 12,
                 sortBy,
@@ -167,27 +179,23 @@ const ProductsContent = () => {
         debouncedGet();
     }, [searchQuery, selectedCategory, priceRange, isCustomizable, sortBy, sortOrder, getProducts]);
 
+    // Initial load
     useEffect(() => {
         getCategories();
-        fetchProducts();
-    }, [fetchProducts, getCategories]);
+    }, [getCategories]);
 
+    // Fetch products whenever filters change
     useEffect(() => {
         fetchProducts();
-    }, [selectedCategory, isCustomizable, sortBy, sortOrder, fetchProducts]);
+    }, [fetchProducts]);
 
-    // Sync URL on significant changes or just let actions trigger it
+    // Sync URL whenever filters change
     useEffect(() => {
-        // This effect ensures URL is updated when filters change
         const timer = setTimeout(() => {
             updateSearchParams();
         }, 500);
         return () => clearTimeout(timer);
-    }, [selectedCategory, isCustomizable, sortBy, sortOrder, priceRange, searchQuery, updateSearchParams]);
-
-    useEffect(() => {
-        fetchProducts();
-    }, [priceRange, fetchProducts]);
+    }, [updateSearchParams]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -203,12 +211,10 @@ const ProductsContent = () => {
         setSortBy('createdAt');
         setSortOrder('desc');
         router.push('/products');
-        setTimeout(() => fetchProducts(), 100);
     };
 
     const hasActiveFilters =
         !!(searchQuery || selectedCategory || priceRange[0] > 0 || priceRange[1] < 50000 || isCustomizable);
-
 
     return (
         <div className="pt-24 pb-16">
