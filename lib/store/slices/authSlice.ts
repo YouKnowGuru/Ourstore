@@ -1,16 +1,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { authAPI } from '@/lib/services/api';
-import type { User, AuthState, LoginCredentials, RegisterData } from '@/lib/types';
+import type { User, AuthState } from '@/lib/types';
 
-const getStoredUser = (): User | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  } catch {
-    return null;
-  }
-};
 
 const initialState: AuthState = {
   user: null,

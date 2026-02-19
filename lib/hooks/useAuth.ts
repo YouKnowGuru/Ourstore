@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '@/lib/store';
-import type { LoginCredentials, RegisterData } from '@/lib/types';
+
 import { getMe, logout } from '@/lib/store/slices/authSlice';
 
 export const useAuth = () => {

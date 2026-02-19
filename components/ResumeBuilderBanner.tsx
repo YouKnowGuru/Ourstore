@@ -13,7 +13,11 @@ const ResumeBuilderBanner = () => {
             delay: `${i * 1.5}s`,
             duration: `${5 + Math.random() * 5}s`
         }));
-        setParticles(newParticles);
+
+        const timer = setTimeout(() => {
+            setParticles(newParticles);
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     return (

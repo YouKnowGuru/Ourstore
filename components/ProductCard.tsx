@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingCart, Eye, Sparkles, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Sparkles, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/helpers';
 import { useCart } from '@/lib/hooks/useCart';
