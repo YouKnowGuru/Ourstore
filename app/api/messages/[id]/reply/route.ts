@@ -28,12 +28,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (!message) return NextResponse.json({ message: 'Message not found' }, { status: 404 });
 
         // Send email reply
-        await sendEmail({
-            to: message.email,
-            subject: `Re: ${message.subject}`,
-            text: reply,
-            html: `<div><p>${reply}</p><hr/><p>Original message from ${message.name}:</p><blockquote>${message.message}</blockquote></div>`
-        });
+        const emailResult = await sendEmail(
+            message.email,
+            `Re: ${message.subject}`,
+            `<div><p>${reply}</p><hr/><p>Original message from ${message.name}:</p><blockquote>${message.message}</blockquote></div>`
+        );
+
+        if (!emailResult.success) {
+            console.error('Failed to send email reply:', emailResult.error);
+        }
 
         message.isRead = true;
         await message.save();

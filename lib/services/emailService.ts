@@ -2,46 +2,46 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: Number(process.env.EMAIL_PORT) || 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-        rejectUnauthorized: false,
-    },
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: Number(process.env.EMAIL_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
-const sendEmail = async (to: string, subject: string, html: string, attachments: object[] = []) => {
-    try {
-        const logoPath = path.join(process.cwd(), 'server', 'utils', 'assets', 'logo.png');
-        const info = await transporter.sendMail({
-            from: `"Our Store Bhutan" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html,
-            attachments: [
-                {
-                    filename: 'logo.png',
-                    path: logoPath,
-                    cid: 'logo',
-                },
-                ...attachments,
-            ],
-        });
-        console.log('Email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
-    } catch (error: unknown) {
-        const err = error as Error;
-        console.error('Email error:', err);
-        return { success: false, error: err.message };
-    }
+export const sendEmail = async (to: string, subject: string, html: string, attachments: object[] = []) => {
+  try {
+    const logoPath = path.join(process.cwd(), 'server', 'utils', 'assets', 'logo.png');
+    const info = await transporter.sendMail({
+      from: `"Our Store Bhutan" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+      attachments: [
+        {
+          filename: 'logo.png',
+          path: logoPath,
+          cid: 'logo',
+        },
+        ...attachments,
+      ],
+    });
+    console.log('Email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Email error:', err);
+    return { success: false, error: err.message };
+  }
 };
 
 const getEmailTemplate = (content: string, title = 'Our Store Bhutan') => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -87,10 +87,10 @@ const getEmailTemplate = (content: string, title = 'Our Store Bhutan') => {
 };
 
 export const sendOTPEmail = async (email: string, otp: string, purpose = 'verification') => {
-    const subject = purpose === 'password-reset' ? 'Password Reset OTP' : 'Email Verification';
-    const isPasswordReset = purpose === 'password-reset';
+  const subject = purpose === 'password-reset' ? 'Password Reset OTP' : 'Email Verification';
+  const isPasswordReset = purpose === 'password-reset';
 
-    const content = `
+  const content = `
     <tr>
       <td style="background: linear-gradient(135deg, #FF6B35 0%, #8B2635 100%); padding: 50px 30px; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 10px;">${isPasswordReset ? '🔐' : '✉️'}</div>
@@ -106,8 +106,8 @@ export const sendOTPEmail = async (email: string, otp: string, purpose = 'verifi
         </h2>
         <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
           ${isPasswordReset
-            ? 'We received a request to reset your password. Use the verification code below to proceed:'
-            : 'Thank you for signing up! Please use the verification code below to confirm your email address:'}
+      ? 'We received a request to reset your password. Use the verification code below to proceed:'
+      : 'Thank you for signing up! Please use the verification code below to confirm your email address:'}
         </p>
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 3px dashed #FF6B35; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
           <p style="color: #666; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Verification Code</p>
@@ -127,11 +127,11 @@ export const sendOTPEmail = async (email: string, otp: string, purpose = 'verifi
     </tr>
   `;
 
-    return await sendEmail(email, subject, getEmailTemplate(content, subject));
+  return await sendEmail(email, subject, getEmailTemplate(content, subject));
 };
 
 export const sendOrderConfirmation = async (email: string, order: { orderNumber: string; createdAt: Date; total: number; orderStatus?: string }) => {
-    const content = `
+  const content = `
     <tr>
       <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 50px 30px; text-align: center;">
         <div style="font-size: 64px; margin-bottom: 10px;">🎉</div>
@@ -167,21 +167,21 @@ export const sendOrderConfirmation = async (email: string, order: { orderNumber:
     </tr>
   `;
 
-    return await sendEmail(email, `Order Confirmation - ${order.orderNumber}`, getEmailTemplate(content, 'Order Confirmed'));
+  return await sendEmail(email, `Order Confirmation - ${order.orderNumber}`, getEmailTemplate(content, 'Order Confirmed'));
 };
 
 export const sendOrderStatusUpdate = async (email: string, order: { orderNumber: string; orderStatus: string; trackingNumber?: string }) => {
-    const statusConfig: Record<string, { color: string; emoji: string; gradient: string }> = {
-        Processing: { color: '#3b82f6', emoji: '⚙️', gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
-        Shipped: { color: '#8b5cf6', emoji: '🚚', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
-        Delivered: { color: '#10b981', emoji: '✅', gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
-        Cancelled: { color: '#ef4444', emoji: '❌', gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' },
-    };
+  const statusConfig: Record<string, { color: string; emoji: string; gradient: string }> = {
+    Processing: { color: '#3b82f6', emoji: '⚙️', gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
+    Shipped: { color: '#8b5cf6', emoji: '🚚', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
+    Delivered: { color: '#10b981', emoji: '✅', gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+    Cancelled: { color: '#ef4444', emoji: '❌', gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' },
+  };
 
-    const status = order.orderStatus || 'Processing';
-    const config = statusConfig[status] || statusConfig['Processing'];
+  const status = order.orderStatus || 'Processing';
+  const config = statusConfig[status] || statusConfig['Processing'];
 
-    const content = `
+  const content = `
     <tr>
       <td style="background: ${config.gradient}; padding: 50px 30px; text-align: center;">
         <div style="font-size: 64px; margin-bottom: 10px;">${config.emoji}</div>
@@ -208,5 +208,5 @@ export const sendOrderStatusUpdate = async (email: string, order: { orderNumber:
     </tr>
   `;
 
-    return await sendEmail(email, `Order Update - ${order.orderNumber}`, getEmailTemplate(content, `Order ${status}`));
+  return await sendEmail(email, `Order Update - ${order.orderNumber}`, getEmailTemplate(content, `Order ${status}`));
 };
