@@ -11,7 +11,8 @@ import {
   X,
   LogOut,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
