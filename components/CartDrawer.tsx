@@ -75,11 +75,11 @@ const CartDrawer = () => {
                                 {items.map((item, index) => (
                                     <div
                                         key={item.productId}
-                                        className="group relative flex gap-4 p-3 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 animate-slide-in-right"
+                                        className="group relative flex gap-3 md:gap-4 p-3 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 animate-slide-in-right"
                                         style={{ animationDelay: `${index * 50} ms` }}
                                     >
                                         {/* Product Image */}
-                                        <div className="w-20 h-20 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden relative">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden relative">
                                             {item.image ? (
                                                 <img
                                                     src={item.image}
@@ -88,7 +88,7 @@ const CartDrawer = () => {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center">
-                                                    <ShoppingBag className="w-8 h-8 text-gray-300" />
+                                                    <ShoppingBag className="w-6 h-6 md:w-8 md:h-8 text-gray-300" />
                                                 </div>
                                             )}
                                         </div>
@@ -97,25 +97,25 @@ const CartDrawer = () => {
                                         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                                             <div>
                                                 <div className="flex justify-between items-start gap-2">
-                                                    <h4 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-maroon transition-colors">{item.title}</h4>
+                                                    <h4 className="font-semibold text-xs md:text-sm text-gray-900 line-clamp-2 md:line-clamp-1 group-hover:text-maroon transition-colors pr-1">{item.title}</h4>
                                                     <button
                                                         onClick={() => removeFromCart(item.productId)}
-                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-1"
+                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1 -mr-1 flex-shrink-0"
                                                     >
-                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                                     </button>
                                                 </div>
 
                                                 {/* Customization Info */}
                                                 {item.customization && (
-                                                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                                    <div className="flex flex-wrap gap-1.5 mt-1">
                                                         {item.customization.size && (
-                                                            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md border border-gray-200">
+                                                            <span className="text-[9px] md:text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md border border-gray-200">
                                                                 {item.customization.size}
                                                             </span>
                                                         )}
                                                         {item.customization.color && (
-                                                            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md border border-gray-200">
+                                                            <span className="text-[9px] md:text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md border border-gray-200">
                                                                 {item.customization.color}
                                                             </span>
                                                         )}
@@ -123,8 +123,8 @@ const CartDrawer = () => {
                                                 )}
                                             </div>
 
-                                            <div className="flex items-end justify-between mt-2">
-                                                <span className="font-bold text-saffron text-sm">
+                                            <div className="flex items-center justify-between mt-2 pt-1 flex-wrap gap-2">
+                                                <span className="font-bold text-saffron text-xs md:text-sm whitespace-nowrap">
                                                     {formatPrice(item.price)}
                                                 </span>
 
@@ -132,14 +132,14 @@ const CartDrawer = () => {
                                                 <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 border border-gray-200">
                                                     <button
                                                         onClick={() => updateItemQuantity(item.productId, item.quantity - 1)}
-                                                        className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white hover:text-saffron hover:shadow-sm transition-all text-gray-500"
+                                                        className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-md hover:bg-white hover:text-saffron hover:shadow-sm transition-all text-gray-500"
                                                     >
                                                         <Minus className="w-3 h-3" />
                                                     </button>
-                                                    <span className="w-6 text-center text-xs font-medium text-gray-900">{item.quantity}</span>
+                                                    <span className="w-5 md:w-6 text-center text-xs font-medium text-gray-900">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateItemQuantity(item.productId, item.quantity + 1)}
-                                                        className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white hover:text-saffron hover:shadow-sm transition-all text-gray-500"
+                                                        className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-md hover:bg-white hover:text-saffron hover:shadow-sm transition-all text-gray-500"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                     </button>
