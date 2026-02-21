@@ -214,6 +214,11 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
+
+  /* Spring easing for organic feel */
+  .ease-spring {
+    transition-timing-function: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  }
 }
 
 /* Enhanced Custom Scrollbar */
