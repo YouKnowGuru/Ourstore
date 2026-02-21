@@ -36,6 +36,7 @@ const Header = () => {
   const wishlistCount = wishlist.length;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -51,6 +52,7 @@ const Header = () => {
     if (searchQuery.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
+      setIsMobileSearchOpen(false);
     }
   };
 
@@ -226,24 +228,43 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden md:flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full font-bold hover:bg-maroon/5 text-gray-700"
-                  onClick={() => router.push('/login')}
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-maroon hover:bg-maroon-800 rounded-full font-black px-6 shadow-glow transition-all duration-300 hover:scale-105"
-                  onClick={() => router.push('/register')}
-                >
-                  Join Us
-                </Button>
-              </div>
+              <>
+                <div className="hidden md:flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full font-bold hover:bg-maroon/5 text-gray-700"
+                    onClick={() => router.push('/login')}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-maroon hover:bg-maroon-800 rounded-full font-black px-6 shadow-glow transition-all duration-300 hover:scale-105"
+                    onClick={() => router.push('/register')}
+                  >
+                    Join Us
+                  </Button>
+                </div>
+                {/* Mobile Auth Links */}
+                <div className="flex md:hidden items-center gap-1.5 mr-1">
+                  <Link href="/login" className="text-[10px] sm:text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-colors">
+                    Login
+                  </Link>
+                  <Link href="/register" className="text-[10px] sm:text-xs font-bold bg-maroon text-white px-3 py-1.5 rounded-full shadow-sm">
+                    Sign Up
+                  </Link>
+                </div>
+              </>
             )}
+
+            {/* Mobile Search Toggle */}
+            <button
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <Search className="w-5 h-5 text-gray-700" />
+            </button>
 
             {/* Cart Button - The Glow Accent */}
             <button
@@ -361,6 +382,30 @@ const Header = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Mobile Search Overlay */}
+      <div className={`md:hidden absolute top-0 left-0 right-0 h-full bg-white/95 backdrop-blur-xl px-4 flex items-center transition-all duration-500 z-10 ${isMobileSearchOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+        <form onSubmit={handleSearch} className="flex items-center w-full gap-2">
+          <button
+            type="button"
+            onClick={() => setIsMobileSearchOpen(false)}
+            className="p-2 text-gray-500 hover:text-maroon transition-colors"
+          >
+            <ArrowRight className="w-5 h-5 rotate-180" />
+          </button>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 focus:border-maroon focus:ring-2 focus:ring-maroon/20 outline-none text-sm bg-white"
+              autoFocus={isMobileSearchOpen}
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
+        </form>
       </div>
     </header>
   );
