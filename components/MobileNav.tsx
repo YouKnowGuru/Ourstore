@@ -47,9 +47,9 @@ const MobileNav = () => {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-6 left-2 right-2 z-[60] animate-slide-in-up">
-            <div className="glass shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-full px-2 py-2 border border-white/40">
-                <nav className="flex items-center justify-between max-w-md mx-auto relative h-14">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] animate-fade-in shadow-[0_-4px_20px_0_rgba(0,0,0,0.05)]">
+            <div className="bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 py-2">
+                <nav className="flex items-center justify-between max-w-md mx-auto relative h-16">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || (item.href.startsWith('/#') && pathname === '/');
 
