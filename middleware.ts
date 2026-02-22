@@ -9,7 +9,8 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute window
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const ip = request.ip || 'anonymous';
+    // Use request.headers.get('x-forwarded-for') as a fallback for IP detection
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'anonymous';
 
     // 1. Basic Application-Level Firewall: Filter suspicious request patterns
     const suspiciousPatterns = [
@@ -51,13 +52,32 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    // 3. Security Headers reinforcement
+    // 3. Security Headers Enforcement
     const response = NextResponse.next();
 
+    // Content Security Policy (Adjusted to be functional yet secure)
+    const cspHeader = `
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        img-src 'self' data: https: http:;
+        font-src 'self' https://fonts.gstatic.com data:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        block-all-mixed-content;
+        upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    response.headers.set('Content-Security-Policy', cspHeader);
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
     response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+    response.headers.set('Cross-Origin-Resource-Policy', 'same-site');
+    response.headers.set('X-DNS-Prefetch-Control', 'on');
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
     return response;
 }
@@ -66,12 +86,8 @@ export function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         /*
-         * Match all request paths except for the ones starting with:
-         * - api (api routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - images/ (public images)
+         * Match ALL request paths including /api/
+         * Exclude only static assets and favicon
          */
         '/((?!_next/static|_next/image|favicon.ico|images/).*)',
     ],
