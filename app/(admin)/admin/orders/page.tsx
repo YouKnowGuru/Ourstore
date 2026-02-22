@@ -66,82 +66,128 @@ const AdminOrders = () => {
                     </thead>
                     <tbody>
                         {orders.map((order) => (
-                            <tr key={order._id} className="border-t hover:bg-gray-50">
-                                <td className="py-3 px-4 font-medium">{order.orderNumber}</td>
-                                <td className="py-3 px-4">
-                                    {order.isGuest ? order.guestInfo?.fullName : order.userId?.fullName}
-                                </td>
-                                <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
-                                <td className="py-3 px-4">{formatPrice(order.total)}</td>
-                                <td className="py-3 px-4">
-                                    <Badge className={getOrderStatusColor(order.orderStatus)}>
-                                        {order.orderStatus}
-                                    </Badge>
-                                </td>
-                                <td className="py-3 px-4">
-                                    <div className="flex items-center gap-2">
-                                        <button className="p-2 hover:bg-gray-100 rounded">
-                                            <Eye className="w-4 h-4" />
-                                        </button>
-                                        {order.orderStatus === 'Pending' && (
-                                            <button
-                                                className="p-2 hover:bg-blue-50 rounded text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                onClick={() => updateStatus(order._id, 'Processing')}
-                                                disabled={updatingOrderId === order._id}
-                                                title="Mark as Processing"
-                                            >
-                                                {updatingOrderId === order._id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <Package className="w-4 h-4" />
-                                                )}
+                            <>
+                                <tr key={order._id} className="border-t hover:bg-gray-50">
+                                    <td className="py-3 px-4 font-medium">{order.orderNumber}</td>
+                                    <td className="py-3 px-4">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">
+                                                {order.isGuest ? order.guestInfo?.fullName : order.userId?.fullName}
+                                            </span>
+                                            <span className="text-xs text-gray-500">
+                                                {order.isGuest ? order.guestInfo?.email : order.userId?.email}
+                                            </span>
+                                            <span className="text-xs text-gray-500">
+                                                {order.isGuest ? order.guestInfo?.phone : order.userId?.phone}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
+                                    <td className="py-3 px-4">{formatPrice(order.total)}</td>
+                                    <td className="py-3 px-4">
+                                        <Badge className={getOrderStatusColor(order.orderStatus)}>
+                                            {order.orderStatus}
+                                        </Badge>
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        <div className="flex items-center gap-2">
+                                            <button className="p-2 hover:bg-gray-100 rounded">
+                                                <Eye className="w-4 h-4" />
                                             </button>
-                                        )}
-                                        {order.orderStatus === 'Processing' && (
-                                            <button
-                                                className="p-2 hover:bg-purple-50 rounded text-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                onClick={() => updateStatus(order._id, 'Shipped')}
-                                                disabled={updatingOrderId === order._id}
-                                                title="Mark as Shipped"
-                                            >
-                                                {updatingOrderId === order._id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <Truck className="w-4 h-4" />
+                                            {order.orderStatus === 'Pending' && (
+                                                <button
+                                                    className="p-2 hover:bg-blue-50 rounded text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onClick={() => updateStatus(order._id, 'Processing')}
+                                                    disabled={updatingOrderId === order._id}
+                                                    title="Mark as Processing"
+                                                >
+                                                    {updatingOrderId === order._id ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Package className="w-4 h-4" />
+                                                    )}
+                                                </button>
+                                            )}
+                                            {order.orderStatus === 'Processing' && (
+                                                <button
+                                                    className="p-2 hover:bg-purple-50 rounded text-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onClick={() => updateStatus(order._id, 'Shipped')}
+                                                    disabled={updatingOrderId === order._id}
+                                                    title="Mark as Shipped"
+                                                >
+                                                    {updatingOrderId === order._id ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Truck className="w-4 h-4" />
+                                                    )}
+                                                </button>
+                                            )}
+                                            {order.orderStatus === 'Shipped' && (
+                                                <button
+                                                    className="p-2 hover:bg-green-50 rounded text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onClick={() => updateStatus(order._id, 'Delivered')}
+                                                    disabled={updatingOrderId === order._id}
+                                                    title="Mark as Delivered"
+                                                >
+                                                    {updatingOrderId === order._id ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle className="w-4 h-4" />
+                                                    )}
+                                                </button>
+                                            )}
+                                            {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
+                                                <button
+                                                    className="p-2 hover:bg-red-50 rounded text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onClick={() => updateStatus(order._id, 'Cancelled')}
+                                                    disabled={updatingOrderId === order._id}
+                                                    title="Cancel Order"
+                                                >
+                                                    {updatingOrderId === order._id ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <XCircle className="w-4 h-4" />
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr key={`${order._id}-details`} className="bg-gray-50/50">
+                                    <td colSpan={6} className="py-4 px-4">
+                                        <div className="grid grid-cols-2 gap-8 text-sm">
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900 mb-2">Shipping Address</h3>
+                                                <p className="text-gray-600">{order.shippingAddress.fullName}</p>
+                                                <p className="text-gray-600">{order.shippingAddress.phone}</p>
+                                                <p className="text-gray-600">{order.shippingAddress.addressLine1}</p>
+                                                {order.shippingAddress.addressLine2 && (
+                                                    <p className="text-gray-600">{order.shippingAddress.addressLine2}</p>
                                                 )}
-                                            </button>
-                                        )}
-                                        {order.orderStatus === 'Shipped' && (
-                                            <button
-                                                className="p-2 hover:bg-green-50 rounded text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                onClick={() => updateStatus(order._id, 'Delivered')}
-                                                disabled={updatingOrderId === order._id}
-                                                title="Mark as Delivered"
-                                            >
-                                                {updatingOrderId === order._id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <CheckCircle className="w-4 h-4" />
-                                                )}
-                                            </button>
-                                        )}
-                                        {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
-                                            <button
-                                                className="p-2 hover:bg-red-50 rounded text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                onClick={() => updateStatus(order._id, 'Cancelled')}
-                                                disabled={updatingOrderId === order._id}
-                                                title="Cancel Order"
-                                            >
-                                                {updatingOrderId === order._id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <XCircle className="w-4 h-4" />
-                                                )}
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
+                                                <p className="text-gray-600">
+                                                    {order.shippingAddress.city}, {order.shippingAddress.dzongkhag}
+                                                </p>
+                                                <p className="text-gray-600">{order.shippingAddress.postalCode}</p>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900 mb-2">Order Summary</h3>
+                                                <div className="space-y-1">
+                                                    {order.items.map((item: any) => (
+                                                        <div key={item._id} className="flex justify-between">
+                                                            <span>{item.title} x {item.quantity}</span>
+                                                            <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                                                        </div>
+                                                    ))}
+                                                    <div className="border-t pt-1 mt-2 font-semibold flex justify-between">
+                                                        <span>Total</span>
+                                                        <span>{formatPrice(order.total)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </>
                         ))}
                     </tbody>
                 </table>

@@ -40,7 +40,8 @@ export async function GET(req: NextRequest) {
             .sort({ createdAt: -1 })
             .limit(limit)
             .skip((page - 1) * limit)
-            .populate('items.productId', 'images');
+            .populate('items.productId', 'images')
+            .populate('userId', 'fullName email phone');
 
         const count = await Order.countDocuments(query);
 
