@@ -112,8 +112,10 @@ export const orderAPI = {
   createOrder: (data: any) => api.post('/orders', data),
   getOrders: (params?: any) => api.get('/orders', { params }),
   getOrder: (id: string) => api.get(`/orders/${id}`),
-  updateOrderStatus: (id: string, data: any) => api.patch(`/orders/${id}`, { orderStatus: data.status, trackingNumber: data.trackingNumber }),
-  updatePaymentStatus: (id: string, data: any) => api.patch(`/orders/${id}`, { paymentStatus: data.status }),
+  updateOrderStatus: (id: string, data: { orderStatus: string; trackingNumber?: string }) =>
+    api.patch(`/orders/${id}`, data),
+  updatePaymentStatus: (id: string, data: { paymentStatus: string }) =>
+    api.patch(`/orders/${id}`, data),
   cancelOrder: (id: string) => api.delete(`/orders/${id}`),
   getOrderStats: () => api.get('/orders/stats'),
 };
