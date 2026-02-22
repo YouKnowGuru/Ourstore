@@ -103,11 +103,8 @@ const AdminOrders = () => {
                                     </td>
                                     <td className="py-4 px-4">
                                         <div className="flex flex-col gap-1.5">
-                                            <Badge className={`${getOrderStatusColor(order.orderStatus)} text-[10px] px-2 py-0.5 w-fit border-none shadow-none`}>
+                                            <Badge className={`${getOrderStatusColor(order.orderStatus)} text-[10px] px-2 py-0.5 w-fit border-none shadow-none uppercase font-bold`}>
                                                 {order.orderStatus}
-                                            </Badge>
-                                            <Badge className={`${getPaymentStatusColor(order.paymentStatus)} text-[10px] px-2 py-0.5 w-fit border-none shadow-none`}>
-                                                {order.paymentStatus}
                                             </Badge>
                                         </div>
                                     </td>
@@ -170,18 +167,32 @@ const AdminOrders = () => {
                                     <tr className="bg-gray-50/80">
                                         <td colSpan={5} className="py-6 px-8 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-                                                <div className="space-y-3">
-                                                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                                        <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                                        Shipping Address
-                                                    </h3>
-                                                    <div className="text-gray-600 space-y-1 pl-3.5 border-l border-gray-200">
-                                                        <p className="font-semibold text-gray-800">{order.shippingAddress.fullName}</p>
-                                                        <p>{order.shippingAddress.phone}</p>
-                                                        <p>{order.shippingAddress.addressLine1}</p>
-                                                        {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
-                                                        <p>{order.shippingAddress.city}, {order.shippingAddress.dzongkhag}</p>
-                                                        <p className="text-gray-400 text-xs">{order.shippingAddress.postalCode}</p>
+                                                <div className="space-y-4">
+                                                    <div className="space-y-3">
+                                                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                                            <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                                                            Shipping Address
+                                                        </h3>
+                                                        <div className="text-gray-600 space-y-1 pl-3.5 border-l border-gray-200">
+                                                            <p className="font-semibold text-gray-800">{order.shippingAddress.fullName}</p>
+                                                            <p>{order.shippingAddress.phone}</p>
+                                                            <p>{order.shippingAddress.addressLine1}</p>
+                                                            {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
+                                                            <p>{order.shippingAddress.city}, {order.shippingAddress.dzongkhag}</p>
+                                                            <p className="text-gray-400 text-xs">{order.shippingAddress.postalCode}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                                            <div className="w-1.5 h-4 bg-green-500 rounded-full" />
+                                                            Payment Info
+                                                        </h3>
+                                                        <div className="pl-3.5 border-l border-gray-200">
+                                                            <Badge className={`${getPaymentStatusColor(order.paymentStatus)} text-[10px] px-2 py-0.5 w-fit border-none shadow-none uppercase font-bold`}>
+                                                                {order.paymentStatus}
+                                                            </Badge>
+                                                        </div>
                                                     </div>
                                                 </div>
 

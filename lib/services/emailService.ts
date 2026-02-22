@@ -170,7 +170,7 @@ export const sendOrderConfirmation = async (email: string, order: { orderNumber:
   return await sendEmail(email, `Order Confirmation - ${order.orderNumber}`, getEmailTemplate(content, 'Order Confirmed'));
 };
 
-export const sendOrderStatusUpdate = async (email: string, order: { orderNumber: string; orderStatus: string; trackingNumber?: string }) => {
+export const sendOrderStatusUpdate = async (email: string, order: any) => {
   const statusConfig: Record<string, { color: string; emoji: string; gradient: string }> = {
     Processing: { color: '#3b82f6', emoji: '⚙️', gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
     Shipped: { color: '#8b5cf6', emoji: '🚚', gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
@@ -181,7 +181,7 @@ export const sendOrderStatusUpdate = async (email: string, order: { orderNumber:
   const status = order.orderStatus || 'Processing';
   const config = statusConfig[status] || statusConfig['Processing'];
 
-  const content = `
+  let content = `
     <tr>
       <td style="background: ${config.gradient}; padding: 50px 30px; text-align: center;">
         <div style="font-size: 64px; margin-bottom: 10px;">${config.emoji}</div>
@@ -207,6 +207,66 @@ export const sendOrderStatusUpdate = async (email: string, order: { orderNumber:
       </td>
     </tr>
   `;
+
+  if (status === 'Shipped') {
+    const itemsHtml = order.items.map((item: any) => `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+          <div style="font-weight: 600; color: #1a1a2e;">${item.title || (item.productId?.title)}</div>
+          <div style="font-size: 12px; color: #666;">Qty: ${item.quantity} × Nu. ${item.price.toFixed(2)}</div>
+        </td>
+        <td style="padding: 12px 0; text-align: right; border-bottom: 1px solid #eee; font-weight: 700; color: #1a1a2e;">
+          Nu. ${(item.quantity * item.price).toFixed(2)}
+        </td>
+      </tr>
+    `).join('');
+
+    content += `
+      <tr>
+        <td style="padding: 0 40px 50px 40px;">
+          <h3 style="color: #1a1a2e; font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #FF6B35; display: inline-block;">Order Invoice</h3>
+          
+          <div style="background: #ffffff; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="text-align: left; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;">
+                  <th style="padding-bottom: 10px;">Item Details</th>
+                  <th style="padding-bottom: 10px; text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td style="padding: 15px 0 5px 0; text-align: right; color: #666; font-size: 14px;">Subtotal</td>
+                  <td style="padding: 15px 0 5px 0; text-align: right; color: #1a1a2e; font-weight: 600;">Nu. ${order.subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; text-align: right; color: #666; font-size: 14px;">Shipping Fee</td>
+                  <td style="padding: 5px 0; text-align: right; color: #1a1a2e; font-weight: 600;">Nu. ${order.shippingFee.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px 0; text-align: right; color: #1a1a2e; font-weight: 800; font-size: 18px;">Total Paid</td>
+                  <td style="padding: 15px 0; text-align: right; color: #FF6B35; font-weight: 900; font-size: 22px;">Nu. ${order.total.toFixed(2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div style="background: #fdf2f2; border-radius: 8px; padding: 20px; border-left: 4px solid #FF6B35;">
+            <h4 style="margin: 0 0 10px 0; color: #8B2635; font-size: 14px; text-transform: uppercase;">Delivery Address</h4>
+            <div style="color: #4a4a4a; font-size: 14px; line-height: 1.5;">
+              <strong>${order.shippingAddress.fullName}</strong><br>
+              ${order.shippingAddress.addressLine1}${order.shippingAddress.addressLine2 ? `<br>${order.shippingAddress.addressLine2}` : ''}<br>
+              ${order.shippingAddress.city}, ${order.shippingAddress.dzongkhag}<br>
+              Phone: ${order.shippingAddress.phone}
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
 
   return await sendEmail(email, `Order Update - ${order.orderNumber}`, getEmailTemplate(content, `Order ${status}`));
 };
