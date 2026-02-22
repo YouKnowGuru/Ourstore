@@ -54,8 +54,10 @@ export function middleware(request: NextRequest) {
     // 3. Security Headers reinforcement
     const response = NextResponse.next();
 
-    // Ensure all security headers are set (redundant with next.config.ts but good for reinforcement)
-    // CSP is handled by Next.js automatically if configured, but we can add or tweak here if needed.
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+    response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
 
     return response;
 }
