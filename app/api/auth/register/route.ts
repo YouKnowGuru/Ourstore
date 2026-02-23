@@ -23,10 +23,21 @@ export async function POST(req: NextRequest) {
 
         const user = await User.create({ fullName, email, password, phone, otp, otpExpiry });
 
-        await sendOTPEmail(email, otp, 'verification');
+        let emailSent = true;
+        try {
+            await sendOTPEmail(email, otp, 'verification');
+        } catch (error) {
+            console.error('Registration email failed:', error);
+            emailSent = false;
+        }
 
         return NextResponse.json(
-            { message: 'Registration successful. Please verify your email.', userId: user._id },
+            {
+                message: emailSent
+                    ? 'Registration successful. Please verify your email.'
+                    : 'Registration successful, but we failed to send the verification email. Please contact support.',
+                userId: user._id
+            },
             { status: 201 }
         );
     } catch (error: unknown) {
