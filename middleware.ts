@@ -10,7 +10,7 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute window
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     // Use request.headers.get('x-forwarded-for') as a fallback for IP detection
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'anonymous';
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'anonymous';
 
     // 1. Basic Application-Level Firewall: Filter suspicious request patterns
     const suspiciousPatterns = [
@@ -58,8 +58,9 @@ export function middleware(request: NextRequest) {
     // Content Security Policy (Adjusted to be functional yet secure)
     const cspHeader = `
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
+        connect-src 'self' https://unpkg.com;
         img-src 'self' data: https: http:;
         font-src 'self' https://fonts.gstatic.com data:;
         object-src 'none';
