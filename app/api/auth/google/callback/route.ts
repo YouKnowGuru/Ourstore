@@ -13,12 +13,14 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        const { origin } = new URL(req.url);
+
         // 1. Exchange code for tokens
         const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
             code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback',
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL || `${origin}/api/auth/google/callback`,
             grant_type: 'authorization_code',
         });
 
@@ -63,7 +65,7 @@ export async function GET(req: NextRequest) {
         await user.save();
 
         // 5. Redirect to frontend callback page with tokens
-        const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000';
+        const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || origin;
         const redirectUrl = new URL('/auth-callback', frontendUrl);
         redirectUrl.searchParams.set('token', accessToken);
         redirectUrl.searchParams.set('refreshToken', refreshToken);
