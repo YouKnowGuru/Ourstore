@@ -61,7 +61,7 @@ export function middleware(request: NextRequest) {
         script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://unpkg.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
         connect-src 'self' https://unpkg.com;
-        img-src 'self' data: https: http:;
+        img-src 'self' data: blob: https: http:;
         font-src 'self' https://fonts.gstatic.com data:;
         object-src 'none';
         base-uri 'self';
