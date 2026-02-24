@@ -271,9 +271,10 @@ export default function ProductDetailPage() {
                                 <span className="w-8 h-[1px] bg-muted-foreground/20"></span>
                                 Product Story
                             </h3>
-                            <div className="prose prose-slate max-w-none prose-headings:font-display prose-headings:font-bold prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-maroon">
-                                <div className="ql-editor !p-0" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
-                            </div>
+                            <div
+                                className="prose prose-slate max-w-none prose-headings:font-display prose-headings:font-bold prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-maroon"
+                                dangerouslySetInnerHTML={{ __html: currentProduct.description }}
+                            />
                         </div>
 
                         {/* Customization Options */}

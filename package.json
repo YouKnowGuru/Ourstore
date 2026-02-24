@@ -38,6 +38,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@reduxjs/toolkit": "^2.11.2",
+    "@tailwindcss/typography": "^0.5.19",
     "axios": "^1.13.4",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -81,6 +82,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.1.6",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
@@ -88,7 +90,6 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.23",
-    "@next/eslint-plugin-next": "^15.1.6",
     "eslint": "^9.39.1",
     "eslint-config-next": "^15.1.6",
     "eslint-plugin-react-hooks": "^7.0.1",
