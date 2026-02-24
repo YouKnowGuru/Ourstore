@@ -46,12 +46,15 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground font-body antialiased;
     background: linear-gradient(135deg, #FDF8F3 0%, #F5EDE3 100%);
     background-attachment: fixed;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   h1,
