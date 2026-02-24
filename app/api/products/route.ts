@@ -84,6 +84,16 @@ export async function POST(req: NextRequest) {
             const formData = await req.formData();
             data = Object.fromEntries(formData.entries());
 
+            // Handle array and boolean fields from FormData
+            if (data.tags && typeof data.tags === 'string') {
+                data.tags = data.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag !== '');
+            }
+            if (data.isFeatured) data.isFeatured = data.isFeatured === 'true';
+            if (data.isCustomizable) data.isCustomizable = data.isCustomizable === 'true';
+            if (data.price) data.price = Number(data.price);
+            if (data.discountPrice) data.discountPrice = Number(data.discountPrice);
+            if (data.stock) data.stock = Number(data.stock);
+
             const images = formData.getAll('images') as File[];
             if (images.length > 0) {
                 const uploadPromises = images.map(async (file) => {
@@ -96,7 +106,11 @@ export async function POST(req: NextRequest) {
 
             // Handle nested customizationOptions if present
             if (data.customizationOptions && typeof data.customizationOptions === 'string') {
-                data.customizationOptions = JSON.parse(data.customizationOptions);
+                try {
+                    data.customizationOptions = JSON.parse(data.customizationOptions);
+                } catch (e) {
+                    console.error("Error parsing customizationOptions:", e);
+                }
             }
         } else {
             data = await req.json();

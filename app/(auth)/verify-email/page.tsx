@@ -65,7 +65,7 @@ const VerifyEmailContent = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" suppressHydrationWarning>
             <button
                 onClick={() => router.back()}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-saffron"
@@ -74,8 +74,8 @@ const VerifyEmailContent = () => {
                 Back
             </button>
 
-            <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-maroon/5 border border-maroon/10 text-maroon text-[10px] font-bold uppercase tracking-wider">
+            <div className="text-center space-y-2" suppressHydrationWarning>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-maroon/5 border border-maroon/10 text-maroon text-[10px] font-bold uppercase tracking-wider" suppressHydrationWarning>
                     <Mail className="w-3 h-3" />
                     <span>Email Verification</span>
                 </div>
@@ -85,8 +85,8 @@ const VerifyEmailContent = () => {
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="flex justify-center gap-3">
+            <form onSubmit={handleSubmit} className="space-y-8" suppressHydrationWarning>
+                <div className="flex justify-center gap-3" suppressHydrationWarning>
                     {otp.map((digit, index) => (
                         <input
                             key={index}
@@ -116,7 +116,7 @@ const VerifyEmailContent = () => {
                         ) : (
                             <span className="text-base uppercase tracking-widest relative z-10">Verify Account</span>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" suppressHydrationWarning />
                     </Button>
 
                     <div className="text-center">

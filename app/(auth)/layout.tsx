@@ -11,17 +11,17 @@ export default function AuthLayout({
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden font-sans" suppressHydrationWarning>
             {/* Background Decorative Elements */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-maroon/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-saffron/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-maroon/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" suppressHydrationWarning />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-saffron/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" suppressHydrationWarning />
 
-            <div className="w-full max-w-6xl flex bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 min-h-[700px] relative z-10">
+            <div className="w-full max-w-6xl flex bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 min-h-[700px] relative z-10" suppressHydrationWarning>
                 {/* Left Side: Illustration / Welcome (Visible on Tablet/Desktop) */}
-                <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#1a1c2e] via-[#2d0b14] to-black relative items-center justify-center p-12 overflow-hidden">
-                    <div className="absolute inset-0 mandala-pattern opacity-10" />
+                <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#1a1c2e] via-[#2d0b14] to-black relative items-center justify-center p-12 overflow-hidden" suppressHydrationWarning>
+                    <div className="absolute inset-0 mandala-pattern opacity-10" suppressHydrationWarning />
                     <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-maroon/20 to-transparent" />
 
-                    <div className="relative z-10 text-center space-y-8 animate-fade-in-up">
-                        <div className="inline-flex items-center justify-center p-6 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl mx-auto mb-6 transform hover:rotate-3 transition-transform duration-500">
+                    <div className="relative z-10 text-center space-y-8 animate-fade-in-up" suppressHydrationWarning>
+                        <div className="inline-flex items-center justify-center p-6 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl mx-auto mb-6 transform hover:rotate-3 transition-transform duration-500" suppressHydrationWarning>
                             <Image
                                 src="/images/logo.png"
                                 alt="Our Store"
@@ -54,7 +54,7 @@ export default function AuthLayout({
                 </div>
 
                 {/* Right Side: Auth Form */}
-                <div className="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative overflow-y-auto">
+                <div className="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative overflow-y-auto" suppressHydrationWarning>
                     {/* Subtle Mobile Header */}
                     <div className="absolute top-8 left-8 right-8 flex lg:hidden items-center justify-between pointer-events-none">
                         <Link href="/" className="p-2.5 bg-gray-50 rounded-xl pointer-events-auto">

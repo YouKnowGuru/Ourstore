@@ -27,6 +27,8 @@ export interface IProduct extends Document {
     tags: string[];
     status: 'active' | 'inactive';
     salesCount: number;
+    metaTitle?: string;
+    metaDescription?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -61,6 +63,8 @@ const productSchema = new Schema<IProduct>(
         tags: [{ type: String, index: true }],
         status: { type: String, enum: ['active', 'inactive'], default: 'active' },
         salesCount: { type: Number, default: 0 },
+        metaTitle: { type: String },
+        metaDescription: { type: String },
     },
     { timestamps: true }
 );

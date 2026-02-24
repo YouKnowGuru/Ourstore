@@ -54,6 +54,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             const formData = await req.formData();
             data = Object.fromEntries(formData.entries());
 
+            // Handle array and boolean fields from FormData
+            if (data.tags && typeof data.tags === 'string') {
+                data.tags = data.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag !== '');
+            }
+            if (data.isFeatured) data.isFeatured = data.isFeatured === 'true';
+            if (data.isCustomizable) data.isCustomizable = data.isCustomizable === 'true';
+            if (data.price) data.price = Number(data.price);
+            if (data.discountPrice) data.discountPrice = Number(data.discountPrice);
+            if (data.stock) data.stock = Number(data.stock);
+
             const images = formData.getAll('images') as File[];
             if (images.length > 0) {
                 const uploadPromises = images.map(async (file) => {
@@ -61,7 +71,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
                     return uploadToCloudinary(base64Image, 'products');
                 });
-                data.images = await Promise.all(uploadPromises);
+                const uploadedImages = await Promise.all(uploadPromises);
+
+                // If we have existing images in data.images (sent as strings), combine them
+                const existingImages = formData.getAll('existingImages') as string[];
+                data.images = [...existingImages, ...uploadedImages];
+            } else {
+                // If no new images, just use existing ones
+                data.images = formData.getAll('existingImages') as string[];
             }
 
             if (data.customizationOptions && typeof data.customizationOptions === 'string') {
