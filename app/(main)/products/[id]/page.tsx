@@ -143,11 +143,11 @@ export default function ProductDetailPage() {
     };
 
     return (
-        <div className="pt-24 pb-16">
-            <div className="bhutan-container">
+        <div className="pt-20 md:pt-24 pb-12 md:pb-16">
+            <div className="bhutan-container px-4 md:px-6">
                 {/* Breadcrumb */}
-                <nav className="text-sm mb-6">
-                    <ol className="flex items-center gap-2">
+                <nav className="text-sm mb-6 overflow-x-auto scrollbar-hide">
+                    <ol className="flex items-center gap-2 whitespace-nowrap">
                         <li><Link href="/" className="text-muted-foreground hover:text-saffron">Home</Link></li>
                         <li className="text-muted-foreground">/</li>
                         <li><Link href="/products" className="text-muted-foreground hover:text-saffron">Products</Link></li>
@@ -156,7 +156,7 @@ export default function ProductDetailPage() {
                     </ol>
                 </nav>
 
-                <div className="grid lg:grid-cols-2 gap-12">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
                     {/* Image Gallery */}
                     <div className="space-y-4">
                         <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden">
@@ -279,7 +279,7 @@ export default function ProductDetailPage() {
 
                         {/* Customization Options */}
                         {currentProduct.isCustomizable && currentProduct.customizationOptions && (
-                            <div className="relative group overflow-hidden bg-gradient-to-br from-saffron/10 to-transparent border border-saffron/20 rounded-[2rem] p-8 space-y-6 transition-all duration-500 hover:shadow-2xl hover:shadow-saffron/5">
+                            <div className="relative group overflow-hidden bg-gradient-to-br from-saffron/10 to-transparent border border-saffron/20 rounded-2xl md:rounded-[2rem] p-5 md:p-8 space-y-6 transition-all duration-500 hover:shadow-2xl hover:shadow-saffron/5">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-saffron/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
 
                                 <h3 className="relative font-display font-black text-lg flex items-center gap-3 text-gray-900">
@@ -359,7 +359,7 @@ export default function ProductDetailPage() {
 
                         {/* Quantity & Actions Container */}
                         <div className="space-y-8 pt-4">
-                            <div className="flex flex-wrap items-center gap-8">
+                            <div className="flex flex-wrap items-center gap-4 md:gap-8">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Quantity</label>
                                     <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl border-2 border-white/50 shadow-inner">
@@ -393,7 +393,7 @@ export default function ProductDetailPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Button
                                     size="lg"
-                                    className="h-16 group relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 hover:from-black hover:to-black text-white rounded-2xl shadow-2xl transition-all duration-500 active:scale-[0.98]"
+                                    className="h-14 md:h-16 group relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 hover:from-black hover:to-black text-white rounded-2xl shadow-2xl transition-all duration-500 active:scale-[0.98]"
                                     onClick={handleAddToCart}
                                     disabled={currentProduct.stock === 0}
                                 >
@@ -405,7 +405,7 @@ export default function ProductDetailPage() {
                                 </Button>
                                 <Button
                                     size="lg"
-                                    className="h-16 group relative overflow-hidden bg-gradient-to-r from-saffron to-saffron-600 hover:from-saffron-500 hover:to-saffron-600 text-white rounded-2xl shadow-2xl transition-all duration-500 active:scale-[0.98] border-none shadow-saffron/20"
+                                    className="h-14 md:h-16 group relative overflow-hidden bg-gradient-to-r from-saffron to-saffron-600 hover:from-saffron-500 hover:to-saffron-600 text-white rounded-2xl shadow-2xl transition-all duration-500 active:scale-[0.98] border-none shadow-saffron/20"
                                     onClick={handleBuyNow}
                                     disabled={currentProduct.stock === 0}
                                 >
@@ -418,7 +418,7 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* Social & Wishlist */}
-                            <div className="flex items-center justify-between py-4 border-y border-gray-100">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 border-y border-gray-100 gap-4">
                                 <button
                                     onClick={() => currentProduct && toggleWishlist(currentProduct)}
                                     className={`flex items-center gap-3 group transition-all duration-300 ${isFavorited ? 'text-maroon' : 'text-gray-400 hover:text-maroon'
@@ -440,7 +440,7 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Features */}
-                        <div className="grid grid-cols-3 gap-8 pt-4">
+                        <div className="grid grid-cols-3 gap-2 md:gap-8 pt-4">
                             <div className="group text-center space-y-2">
                                 <div className="w-12 h-12 bg-saffron/5 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-saffron/10 transition-colors">
                                     <Truck className="w-6 h-6 text-saffron" />
@@ -466,25 +466,25 @@ export default function ProductDetailPage() {
                 {/* Tabs Section - Premium Overhaul */}
                 <div className="mt-24">
                     <Tabs defaultValue="description" className="w-full">
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-0 mb-12">
-                            <TabsList className="bg-transparent h-auto p-0 gap-8">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-gray-100 pb-0 mb-8 md:mb-12 gap-6">
+                            <TabsList className="bg-transparent h-auto p-0 gap-4 md:gap-8 overflow-x-auto w-full md:w-auto scrollbar-hide">
                                 <TabsTrigger
                                     value="description"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-sm font-black uppercase tracking-[0.2em] text-gray-400 transition-all"
+                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-xs md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-gray-400 transition-all"
                                 >
                                     The Details
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="reviews"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-sm font-black uppercase tracking-[0.2em] text-gray-400 transition-all"
+                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-xs md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-gray-400 transition-all"
                                 >
-                                    Social Proof ({reviews.length})
+                                    Reviews ({reviews.length})
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="shipping"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-sm font-black uppercase tracking-[0.2em] text-gray-400 transition-all"
+                                    className="data-[state=active]:bg-transparent data-[state=active]:text-black data-[state=active]:border-b-4 data-[state=active]:border-saffron bg-transparent border-0 rounded-none pb-4 text-xs md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-gray-400 transition-all"
                                 >
-                                    Logistics
+                                    Shipping
                                 </TabsTrigger>
                             </TabsList>
                             <div className="hidden md:flex items-center gap-4 text-xs font-bold text-gray-300">
@@ -501,13 +501,13 @@ export default function ProductDetailPage() {
                         </TabsContent>
 
                         <TabsContent value="reviews" className="mt-0 outline-none">
-                            <div className="grid lg:grid-cols-12 gap-16 py-12">
+                            <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 py-8 md:py-12">
                                 {/* Enhanced Review Summary */}
-                                <div className="lg:col-span-4 space-y-12">
-                                    <div className="relative overflow-hidden bg-white border-2 border-gray-100 p-10 rounded-[3rem] shadow-2xl shadow-gray-200/50">
+                                <div className="lg:col-span-4 space-y-8 md:space-y-12">
+                                    <div className="relative overflow-hidden bg-white border-2 border-gray-100 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-2xl shadow-gray-200/50">
                                         <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 blur-3xl -mr-12 -mt-12" />
                                         <div className="flex flex-col items-center text-center space-y-4">
-                                            <div className="text-6xl font-display font-black text-gray-900 leading-none">
+                                            <div className="text-4xl md:text-6xl font-display font-black text-gray-900 leading-none">
                                                 {currentProduct.ratings.average}
                                             </div>
                                             <div className="flex items-center gap-1.5">
@@ -528,8 +528,8 @@ export default function ProductDetailPage() {
                                     </div>
 
                                     {isAuthenticated ? (
-                                        <div className="relative group p-1 rounded-[2.5rem] bg-gradient-to-br from-saffron to-maroon">
-                                            <div className="bg-white p-8 rounded-[2.3rem] space-y-8">
+                                        <div className="relative group p-1 rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-saffron to-maroon">
+                                            <div className="bg-white p-6 md:p-8 rounded-[1.9rem] md:rounded-[2.3rem] space-y-6 md:space-y-8">
                                                 <div className="space-y-2">
                                                     <h3 className="text-2xl font-display font-black text-gray-900">Write a Review</h3>
                                                     <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">Share your thoughts with us</p>
@@ -616,7 +616,7 @@ export default function ProductDetailPage() {
                                     ) : (
                                         <div className="space-y-8">
                                             {reviews.map((review) => (
-                                                <div key={review._id} className="group relative bg-white border border-gray-100 p-10 rounded-[3rem] hover:shadow-2xl hover:shadow-gray-200/50 hover:border-saffron/20 transition-all duration-700 transform hover:-translate-y-2">
+                                                <div key={review._id} className="group relative bg-white border border-gray-100 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] hover:shadow-2xl hover:shadow-gray-200/50 hover:border-saffron/20 transition-all duration-700 transform hover:-translate-y-2">
                                                     <div className="flex items-start justify-between mb-8">
                                                         <div className="flex items-center gap-6">
                                                             <div className="relative">
@@ -662,7 +662,7 @@ export default function ProductDetailPage() {
                                                         </div>
                                                     </div>
                                                     <div className="space-y-4">
-                                                        <p className="text-gray-600 text-lg leading-relaxed font-medium pl-6 border-l-[6px] border-gray-50 group-hover:border-saffron/30 transition-all duration-700">
+                                                        <p className="text-gray-600 text-base md:text-lg leading-relaxed font-medium pl-4 md:pl-6 border-l-4 md:border-l-[6px] border-gray-50 group-hover:border-saffron/30 transition-all duration-700">
                                                             "{review.comment}"
                                                         </p>
                                                     </div>
@@ -676,8 +676,8 @@ export default function ProductDetailPage() {
 
                         <TabsContent value="shipping" className="mt-0 outline-none">
                             <div className="grid md:grid-cols-2 gap-12 py-16">
-                                <div className="space-y-8">
-                                    <div className="bg-gray-50/50 p-10 rounded-[3rem] border border-white space-y-6">
+                                <div className="space-y-6 md:space-y-8">
+                                    <div className="bg-gray-50/50 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-white space-y-6">
                                         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-gray-100">
                                             <Truck className="w-7 h-7 text-saffron" />
                                         </div>
