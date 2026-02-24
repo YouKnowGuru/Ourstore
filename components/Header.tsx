@@ -82,7 +82,7 @@ const Header = () => {
     >
       <div className={`bhutan-container transition-all duration-700 ${isScrolled ? 'max-w-6xl' : 'max-w-full'}`}>
         <div
-          className={`relative flex items-center justify-between transition-all duration-700 px-6 md:px-10 ${isScrolled
+          className={`relative flex items-center justify-between transition-all duration-700 px-4 md:px-10 ${isScrolled
             ? 'glass shadow-glow-lg rounded-full h-16 border border-white/20'
             : 'bg-white/80 backdrop-blur-md h-20 md:h-24 border-b border-gray-100'
             }`}
@@ -248,15 +248,15 @@ const Header = () => {
                     Join Us
                   </Button>
                 </div>
-                {/* Mobile Auth Links */}
-                <div className="flex md:hidden items-center gap-1.5 mr-1">
+                {/* Mobile Auth Links - Hidden to prevent header overflow, available in mobile menu */}
+                {/* <div className="flex md:hidden items-center gap-1.5 mr-1">
                   <Link href="/login" className="p-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors" aria-label="Login">
                     <LogIn className="w-4 h-4" />
                   </Link>
                   <Link href="/register" className="p-2 bg-maroon text-white rounded-full shadow-sm hover:bg-maroon-800 transition-colors" aria-label="Sign Up">
                     <UserPlus className="w-4 h-4" />
                   </Link>
-                </div>
+                </div> */}
               </>
             )}
 

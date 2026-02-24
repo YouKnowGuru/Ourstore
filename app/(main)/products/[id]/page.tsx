@@ -156,7 +156,7 @@ export default function ProductDetailPage() {
                     </ol>
                 </nav>
 
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                     {/* Image Gallery */}
                     <div className="space-y-4">
                         <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden">
@@ -440,7 +440,7 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Features */}
-                        <div className="grid grid-cols-3 gap-2 md:gap-8 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8 pt-4">
                             <div className="group text-center space-y-2">
                                 <div className="w-12 h-12 bg-saffron/5 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-saffron/10 transition-colors">
                                     <Truck className="w-6 h-6 text-saffron" />

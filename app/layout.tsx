@@ -1,10 +1,17 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
     title: "Bhutan's Premier Tech Store",
     description: "Quality Tech Products & Custom Services",
+};
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 export default function RootLayout({
@@ -14,11 +21,9 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-            <head>
-                <link rel="stylesheet" href="https://unpkg.com/react-quill-new@3.3.1/dist/quill.snow.css" />
-            </head>
             <body suppressHydrationWarning>
                 <Providers>{children}</Providers>
+                <link rel="stylesheet" href="https://unpkg.com/react-quill-new@3.3.1/dist/quill.snow.css" />
             </body>
         </html>
     );
