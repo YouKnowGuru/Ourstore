@@ -50,7 +50,7 @@ const ResumeBuilderBanner = () => {
 
                         {/* Interactive Holographic Background */}
                         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                            <div className="absolute top-0 left-1/4 w-full h-px bg-gradient-to-r from-transparent via-saffron/20 to-transparent -translate-y-full group-hover:translate-y-[800px] transition-all duration-[3000ms] ease-linear" />
+                            <div className="absolute top-0 left-1/4 w-full h-px bg-gradient-to-r from-transparent via-saffron/20 to-transparent -translate-y-full group-hover:translate-y-[800px] transition-all [transition-duration:3000ms] ease-linear" />
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,107,53,0.05),transparent_50%)]" />
                         </div>
 

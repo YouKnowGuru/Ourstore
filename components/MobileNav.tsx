@@ -35,7 +35,7 @@ const MobileNav = () => {
             <div className="max-w-md mx-auto relative px-2 py-2 h-16">
                 {/* Sliding Indicator Background */}
                 <div
-                    className="absolute top-2 bottom-2 bg-maroon/10 rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] z-0"
+                    className="absolute top-2 bottom-2 bg-maroon/10 rounded-2xl transition-all duration-500 [transition-timing-function:cubic-bezier(0.68,-0.55,0.265,1.55)] z-0"
                     style={{
                         width: `calc(${100 / navItems.length}% - 12px)`,
                         left: `calc(${activeIndex * (100 / navItems.length)}% + 6px)`,
