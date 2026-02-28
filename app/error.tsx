@@ -14,7 +14,29 @@ export default function Error({
 }) {
     useEffect(() => {
         // Log the error to an error reporting service
-        console.error(error);
+        console.error('Error Boundary caught error:', error);
+
+        // Check for ChunkLoadError (usually happens after a new deployment)
+        const isChunkError =
+            error.message?.includes('Loading chunk') ||
+            error.message?.includes('ChunkLoadError') ||
+            (error instanceof Error && error.name === 'ChunkLoadError');
+
+        if (isChunkError) {
+            console.warn('ChunkLoadError detected. Attempting to recover by reloading...');
+
+            // Use sessionStorage to prevent infinite reload loops
+            const lastReload = sessionStorage.getItem('last-chunk-error-reload');
+            const now = Date.now();
+
+            // Only reload if we haven't reloaded in the last 10 seconds
+            if (!lastReload || now - parseInt(lastReload) > 10000) {
+                sessionStorage.setItem('last-chunk-error-reload', now.toString());
+                window.location.reload();
+            } else {
+                console.error('Multiple ChunkLoadErrors detected in short succession. Manual action required.');
+            }
+        }
     }, [error]);
 
     return (
