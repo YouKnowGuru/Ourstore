@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 
+// Force dynamic rendering to prevent stale prerendered HTML after deployments
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: "Bhutan's Premier Tech Store",
     description: "Quality Tech Products & Custom Services",
