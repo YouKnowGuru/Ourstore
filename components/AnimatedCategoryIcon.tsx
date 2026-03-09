@@ -34,7 +34,7 @@ const AnimatedCategoryIcon = ({ categoryName }: AnimatedCategoryIconProps) => {
 
                 {/* Tinted Glass Container */}
                 <div
-                    className="relative border rounded-[3rem] p-12 shadow-2xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 animate-float backdrop-blur-3xl"
+                    className="relative border rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-2xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 animate-float backdrop-blur-3xl"
                     style={{
                         background: `rgba(255, 255, 255, 0.4)`,
                         backgroundColor: `${colors[0]}0D`, // 5% opacity
@@ -49,7 +49,7 @@ const AnimatedCategoryIcon = ({ categoryName }: AnimatedCategoryIconProps) => {
                     />
 
                     <Icon
-                        className="w-24 h-24 md:w-28 md:h-28 transition-all duration-700 animate-pulse-slow"
+                        className="w-16 h-16 md:w-28 md:h-28 transition-all duration-700 animate-pulse-slow"
                         style={{
                             stroke: `url(#${id})`,
                             filter: `drop-shadow(0 0 20px ${colors[0]}44)`

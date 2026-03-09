@@ -112,46 +112,20 @@ const ResumeBuilderBanner = () => {
                         <div className="relative flex-1 w-full px-8 pb-16 lg:pb-0 lg:pr-20 overflow-visible">
                             <div className="relative perspective-1000 group-hover:rotate-y-12 transition-all duration-1000 ease-out">
 
-                                {/* 3D Hovering Resume Cards */}
-                                <div className="relative aspect-[4/5] max-w-[380px] mx-auto bg-white rounded-[2rem] border border-stone-200/50 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] p-8 overflow-hidden transform-style-3d animate-float">
+                                {/* 3D Hovering Resume Image */}
+                                <div className="relative aspect-[4/5] max-w-[420px] mx-auto rounded-[2rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] transform-style-3d animate-float group/image">
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-saffron/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-700 z-10" />
+                                    <img
+                                        src="/images/Ourstoreresume builder.png"
+                                        alt="Resume Builder Preview"
+                                        className="w-full h-full object-cover transform scale-100 group-hover/image:scale-105 transition-transform duration-700"
+                                    />
+
+                                    {/* Glass reflection overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/5 to-transparent pointer-events-none" />
 
                                     {/* Scanning Light Effect */}
-                                    <div className="absolute top-0 left-0 w-full h-[150%] bg-gradient-to-b from-transparent via-saffron/10 to-transparent -translate-y-full animate-[scan_4s_linear_infinite]" />
-
-                                    <div className="absolute inset-0 bg-bhutan-pattern opacity-[0.02] mix-blend-overlay" />
-
-                                    <div className="space-y-6 relative z-10">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-saffron/20 to-maroon/20 flex items-center justify-center shadow-inner">
-                                                <FileText className="text-stone-900 w-8 h-8" />
-                                            </div>
-                                            <div className="space-y-2.5 flex-1">
-                                                <div className="h-5 w-4/5 bg-stone-900/10 rounded-full" />
-                                                <div className="h-3.5 w-1/2 bg-stone-900/5 rounded-full" />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4 pt-6 border-t border-stone-100">
-                                            {[1, 2, 3].map((i) => (
-                                                <div key={i} className="space-y-2">
-                                                    <div className="h-2 w-full bg-stone-100 rounded-full" />
-                                                    <div className="h-2 w-3/4 bg-stone-50 rounded-full" />
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4 pt-6">
-                                            <div className="h-24 rounded-2xl bg-stone-50/50 border border-stone-100 flex items-end p-3">
-                                                <div className="h-2 w-full bg-stone-200 rounded-full" />
-                                            </div>
-                                            <div className="h-24 rounded-2xl bg-stone-50/50 border border-stone-100 flex items-end p-3">
-                                                <div className="h-2 w-2/3 bg-stone-200 rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Iridescent Bottom Accent */}
-                                    <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-saffron via-maroon to-gold opacity-50" />
+                                    <div className="absolute top-0 left-0 w-full h-[150%] bg-gradient-to-b from-transparent via-white/20 to-transparent -translate-y-full animate-[scan_4s_linear_infinite] z-20 pointer-events-none" />
                                 </div>
 
                                 {/* Floating Badge - Better Styled */}

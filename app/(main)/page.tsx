@@ -47,10 +47,10 @@ const Home = () => {
     const categories = CATEGORIES;
 
     return (
-        <div className="pt-20">
+        <div className="pt-12">
             <BackToTop />
             {/* Hero Section */}
-            <section className="relative min-h-[700px] flex items-center overflow-hidden">
+            <section className="relative min-h-[500px] flex items-center overflow-hidden">
                 {/* Enhanced Background with Gradient Mesh */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#0B0B15] via-[#1A103C] to-[#2D0F35]">
                     {/* Floating Orbs */}
@@ -65,7 +65,7 @@ const Home = () => {
 
                 <div className="bhutan-container relative z-10">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        <div className="text-white space-y-8 animate-slide-in-right">
+                        <div className="text-white space-y-4 animate-slide-in-right">
                             {/* Modern Badge */}
                             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-dark backdrop-blur-lg animate-bounce-in">
                                 <Sparkles className="w-4 h-4 text-saffron animate-pulse" />
@@ -76,7 +76,7 @@ const Home = () => {
                             <div className="min-h-[180px] flex flex-col justify-center">
                                 <ModernTypingText
                                     text="Quality Tech Products"
-                                    className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight text-white/90 drop-shadow-lg"
+                                    className="text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-tight text-white/90 drop-shadow-lg"
                                     speed={100}
                                     deleteSpeed={40}
                                     pause={3000}
@@ -85,13 +85,13 @@ const Home = () => {
                                 />
 
                                 <div className="relative mt-4">
-                                    <div className="bg-gradient-to-r from-[#00ffff] via-[#ff00ff] to-[#ffff00] bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_auto] text-4xl md:text-5xl lg:text-6xl font-display font-black tracking-wide drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] animate-float">
+                                    <div className="bg-gradient-to-r from-[#00ffff] via-[#ff00ff] to-[#ffff00] bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_auto] text-3xl md:text-4xl lg:text-5xl font-display font-black tracking-wide drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] animate-float">
                                         & Custom Services
                                     </div>
                                 </div>
                             </div>
 
-                            <p className="text-lg md:text-xl text-white/90 max-w-lg leading-relaxed">
+                            <p className="text-base md:text-lg text-white/90 max-w-lg leading-relaxed">
                                 Discover our wide range of electronics, custom photo products, and
                                 professional printing services with authentic Bhutanese hospitality.
                             </p>
@@ -100,7 +100,7 @@ const Home = () => {
                             <div className="flex flex-wrap gap-4">
                                 <Button
                                     size="lg"
-                                    className="bg-gradient-to-r from-saffron to-saffron-600 hover:from-saffron-600 hover:to-saffron-700 text-white shadow-2xl hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300 px-8 py-6 text-base"
+                                    className="bg-gradient-to-r from-saffron to-saffron-600 hover:from-saffron-600 hover:to-saffron-700 text-white shadow-2xl hover:shadow-glow-lg transform hover:scale-105 transition-all duration-300 px-8 py-6 text-sm"
                                     asChild
                                 >
                                     <Link href="/products">
@@ -111,7 +111,7 @@ const Home = () => {
                                 <Button
                                     size="lg"
                                     variant="outline"
-                                    className="bg-transparent border-2 border-white/80 text-white hover:bg-white/20 backdrop-blur-sm shadow-xl transform hover:scale-105 transition-all duration-300 px-8 py-6 text-base"
+                                    className="bg-transparent border-2 border-white/80 text-white hover:bg-white/20 backdrop-blur-sm shadow-xl transform hover:scale-105 transition-all duration-300 px-8 py-6 text-sm"
                                     asChild
                                 >
                                     <Link href="/products?customizable=true">
@@ -132,13 +132,13 @@ const Home = () => {
             <ResumeBuilderBanner />
 
             {/* Categories Section */}
-            <section className="py-20 bg-white mandala-pattern">
+            <section className="py-10 bg-white mandala-pattern">
                 <div className="bhutan-container">
                     <div className="text-center mb-14 animate-slide-in-up">
-                        <h2 className="text-4xl font-display font-bold mb-5 bg-gradient-to-r from-maroon via-saffron to-gold bg-clip-text text-transparent">
+                        <h2 className="text-3xl font-display font-bold mb-5 bg-gradient-to-r from-maroon via-saffron to-gold bg-clip-text text-transparent">
                             Shop by Category
                         </h2>
-                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                        <p className="text-muted-foreground text-base max-w-2xl mx-auto">
                             Browse our wide selection of products across different categories
                         </p>
                     </div>
@@ -155,13 +155,13 @@ const Home = () => {
                                 <AnimatedCategoryIcon categoryName={category.name} />
 
                                 {/* Submit Arrow */}
-                                <div className="absolute bottom-6 right-6 p-3 rounded-full bg-gray-50 group-hover:bg-saffron transition-colors duration-300 shadow-sm">
+                                <div className="absolute bottom-6 right-6 p-3 rounded-full bg-gray-50 group-hover:bg-saffron transition-colors duration-300 shadow-sm z-20">
                                     <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors duration-300" />
                                 </div>
 
                                 {/* Content */}
-                                <div className="absolute bottom-6 left-6 right-16 flex flex-col">
-                                    <span className="text-gray-900 font-bold text-lg leading-tight group-hover:text-saffron transition-colors duration-300">
+                                <div className="absolute bottom-6 left-4 right-12 md:left-6 md:right-16 flex flex-col z-20">
+                                    <span className="text-gray-900 font-bold text-sm leading-tight group-hover:text-saffron transition-colors duration-300">
                                         {category.name}
                                     </span>
                                 </div>
@@ -172,11 +172,11 @@ const Home = () => {
             </section>
 
             {/* Featured Products Section */}
-            <section className="py-16 bg-white">
+            <section className="py-10 bg-white">
                 <div className="bhutan-container">
                     <div className="flex items-center justify-between mb-12">
                         <div>
-                            <h2 className="text-3xl font-display font-bold mb-2">
+                            <h2 className="text-xl font-display font-bold mb-2">
                                 Featured Products
                             </h2>
                             <p className="text-muted-foreground">
@@ -206,7 +206,7 @@ const Home = () => {
             </section>
 
             {/* Features Section */}
-            <section className="py-24 bg-gradient-to-b from-white to-bhutan-cream/30 relative overflow-hidden">
+            <section className="py-12 bg-gradient-to-b from-white to-bhutan-cream/30 relative overflow-hidden">
                 {/* SVG Gradients for Features */}
                 <svg width="0" height="0" className="absolute">
                     <defs>
@@ -261,10 +261,10 @@ const Home = () => {
                                     </div>
                                 </div>
 
-                                <h3 className="font-display font-bold text-sm md:text-xl mb-2 md:mb-4 text-gray-900 group-hover:bg-gradient-to-r from-gray-900 to-gray-500 bg-clip-text group-hover:text-transparent transition-all duration-300">
+                                <h3 className="font-display font-bold text-xs md:text-lg mb-2 md:mb-4 text-gray-900 group-hover:bg-gradient-to-r from-gray-900 to-gray-500 bg-clip-text group-hover:text-transparent transition-all duration-300">
                                     {feature.title}
                                 </h3>
-                                <p className="text-muted-foreground text-[10px] md:text-sm leading-relaxed group-hover:text-gray-600 transition-colors duration-300">
+                                <p className="text-muted-foreground text-[9px] md:text-xs leading-relaxed group-hover:text-gray-600 transition-colors duration-300">
                                     {feature.description}
                                 </p>
 
@@ -280,10 +280,10 @@ const Home = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-16 bg-maroon">
+            <section className="py-10 bg-maroon">
                 <div className="bhutan-container">
                     <div className="text-center text-white space-y-6">
-                        <h2 className="text-3xl md:text-4xl font-display font-bold">
+                        <h2 className="text-2xl md:text-3xl font-display font-bold">
                             Need Custom Products?
                         </h2>
                         <p className="text-white/80 max-w-2xl mx-auto">

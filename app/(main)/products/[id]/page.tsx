@@ -270,7 +270,7 @@ export default function ProductDetailPage() {
                         <div className="space-y-2">
                             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Product Description</h3>
                             <div
-                                className="prose prose-sm max-w-none text-gray-600 break-words overflow-hidden"
+                                className="prose prose-sm max-w-none text-gray-600 text-left break-words"
                                 dangerouslySetInnerHTML={{ __html: currentProduct.description }}
                             />
                         </div>
@@ -452,7 +452,7 @@ export default function ProductDetailPage() {
                         {/* Description Tab */}
                         <TabsContent value="description" className="mt-0 outline-none">
                             <div
-                                className="prose prose-sm md:prose-base max-w-none text-gray-700 break-words overflow-hidden py-4"
+                                className="prose prose-sm md:prose-base max-w-none text-gray-700 py-4 text-left break-words"
                                 dangerouslySetInnerHTML={{ __html: currentProduct.description }}
                             />
                         </TabsContent>
