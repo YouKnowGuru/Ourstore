@@ -44,6 +44,7 @@ export interface IOrder extends Document {
     total: number;
     notes?: string;
     trackingNumber?: string;
+    bfsTransactionId?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -95,6 +96,7 @@ const orderSchema = new Schema<IOrder>(
         total: { type: Number, required: true },
         notes: { type: String },
         trackingNumber: { type: String },
+        bfsTransactionId: { type: Schema.Types.ObjectId, ref: 'BfsTransaction' },
     },
     { timestamps: true }
 );

@@ -130,10 +130,44 @@ const Checkout = () => {
                 isGuest: !user,
             }).unwrap();
 
+            const orderId = result.order._id;
+
+            // ── BFS Online Payment Flow ───────────────────────────
+            if (paymentMethod === 'Online') {
+                try {
+                    const payRes = await fetch('/api/payment/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId,
+                            remitterEmail: user?.email || '',
+                        }),
+                    });
+
+                    if (!payRes.ok) {
+                        const errData = await payRes.json().catch(() => ({}));
+                        throw new Error(errData.message || 'Failed to initiate payment');
+                    }
+
+                    // Response is an HTML auto-submit form — write it to the page
+                    const html = await payRes.text();
+                    emptyCart();
+                    document.open();
+                    document.write(html);
+                    document.close();
+                    return; // Page will redirect to BFS Secure
+                } catch (payErr: unknown) {
+                    const e = payErr as Error;
+                    toast.error(e.message || 'Payment gateway error. Please try again.');
+                    setIsProcessing(false);
+                    return;
+                }
+            }
+
+            // ── COD Flow (unchanged) ─────────────────────────────
             emptyCart();
             toast.success('Order placed successfully!');
-            router.push(`/order-success?orderId=${result.order._id}`);
-            // Note: order-success page will need to fetch order details or retrieve from state/query
+            router.push(`/order-success?orderId=${orderId}`);
         } catch (error: any) {
             toast.error(error?.data?.message || 'Failed to place order');
         } finally {
