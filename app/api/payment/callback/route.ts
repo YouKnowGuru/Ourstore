@@ -14,6 +14,13 @@ import BfsTransaction from '@/lib/models/BfsTransaction';
 import Order from '@/lib/models/Order';
 import { parseACResponse } from '@/lib/bfs/bfsSecure';
 
+export async function GET() {
+  return NextResponse.json(
+    { message: 'This endpoint is for BFS Secure payment callbacks (POST only).' },
+    { status: 200 }
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
