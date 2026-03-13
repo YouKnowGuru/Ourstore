@@ -16,6 +16,13 @@ import { queryTransactionStatus } from '@/lib/bfs/bfsSecure';
 
 const MAX_RETRIES = 5;
 
+export async function GET() {
+  return NextResponse.json(
+    { message: 'This endpoint is for BFS Secure payment status queries (POST only).' },
+    { status: 200 }
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();

@@ -24,6 +24,13 @@ function generateBfsOrderNo(): string {
   return `BFS${ts}${rand}`.slice(0, 20);
 }
 
+export async function GET() {
+  return NextResponse.json(
+    { message: 'This endpoint is for initiating BFS Secure payments (POST only).' },
+    { status: 200 }
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
