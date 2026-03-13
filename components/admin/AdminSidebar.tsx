@@ -12,7 +12,8 @@ import {
   Image,
   MessageSquare,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -25,6 +26,7 @@ const AdminSidebar = () => {
     { icon: Box, label: 'Products', path: '/admin/products' },
     { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
     { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: CreditCard, label: 'Transactions', path: '/admin/transactions' },
     { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
     { icon: FileText, label: 'Blogs', path: '/admin/blogs' },
     { icon: Image, label: 'Gallery', path: '/admin/gallery' },

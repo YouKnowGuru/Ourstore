@@ -126,6 +126,8 @@ export const adminAPI = {
   getUsers: (params?: any) => api.get('/admin/users', { params }),
   getUserDetails: (id: string) => api.get(`/admin/users/${id}`),
   toggleUserStatus: (id: string) => api.put(`/admin/users/${id}/toggle-status`),
+  getTransactions: (params?: any) => api.get('/admin/transactions', { params }),
+  refreshTransactionStatus: (orderNo: string) => api.post('/payment/status', { orderNo }),
 };
 
 // Blog API
