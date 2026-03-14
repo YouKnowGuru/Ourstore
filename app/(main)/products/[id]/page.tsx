@@ -146,7 +146,7 @@ export default function ProductDetailPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
 
                 {/* Breadcrumb */}
-                <nav className="text-sm mb-6 overflow-x-auto">
+                <nav className="text-sm mb-4 sm:mb-6 overflow-x-auto scrollbar-hide">
                     <ol className="flex items-center gap-2 whitespace-nowrap">
                         <li><Link href="/" className="text-gray-500 hover:text-saffron">Home</Link></li>
                         <li className="text-gray-400">/</li>
@@ -157,7 +157,7 @@ export default function ProductDetailPage() {
                 </nav>
 
                 {/* Main Product Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 
                     {/* Image Gallery */}
                     <div className="space-y-3">
@@ -210,7 +210,7 @@ export default function ProductDetailPage() {
 
                         {/* Thumbnail Gallery */}
                         {currentProduct.images.length > 1 && (
-                            <div className="flex gap-2 overflow-x-auto pb-1">
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {currentProduct.images.map((image, index) => (
                                     <button
                                         key={index}
@@ -343,27 +343,27 @@ export default function ProductDetailPage() {
                         )}
 
                         {/* Quantity & Stock */}
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase tracking-wide text-gray-400">Quantity</label>
-                                <div className="flex items-center bg-gray-100 p-1 rounded-xl">
+                        <div className="flex flex-wrap items-end gap-5">
+                            <div className="space-y-2">
+                                <label className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-gray-400">Quantity</label>
+                                <div className="flex items-center bg-gray-100 p-1 rounded-xl w-fit">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-maroon transition-colors"
+                                        className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-maroon transition-colors"
                                     >
                                         <Minus className="w-4 h-4" />
                                     </button>
-                                    <span className="w-10 text-center font-bold text-base">{quantity}</span>
+                                    <span className="w-12 text-center font-bold text-base">{quantity}</span>
                                     <button
                                         onClick={() => setQuantity(Math.min(currentProduct.stock, quantity + 1))}
-                                        className="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-saffron transition-colors"
+                                        className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-saffron transition-colors"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2 mt-5">
+                            <div className="space-y-1 mb-2">
+                                <div className="flex items-center gap-2">
                                     <div className={`w-2 h-2 rounded-full ${currentProduct.stock > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                                     <span className={`text-sm font-bold ${currentProduct.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                                         {currentProduct.stock > 0 ? 'In Stock' : 'Out of Stock'}
@@ -374,7 +374,7 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <Button
                                 size="lg"
                                 className="h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-sm transition-all"
@@ -429,10 +429,10 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Tabs Section */}
-                <div className="mt-12 md:mt-16">
+                <div className="mt-10 md:mt-16">
                     <Tabs defaultValue="description" className="w-full">
                         <div className="border-b border-gray-200 mb-6">
-                            <TabsList className="bg-transparent h-auto p-0 gap-0 w-full justify-start overflow-x-auto flex scrollbar-hide">
+                            <TabsList className="bg-transparent h-auto p-0 gap-0 w-full justify-start overflow-x-auto flex scrollbar-hide snap-x snap-mandatory">
                                 {[
                                     { value: 'description', label: 'Description' },
                                     { value: 'reviews', label: `Reviews (${reviews.length})` },

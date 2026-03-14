@@ -178,36 +178,36 @@ const Checkout = () => {
     return (
         <div className="pt-24 pb-16 bg-gray-50/30">
             <div className="bhutan-container">
-                <h1 className="text-4xl font-display font-black tracking-tight mb-10 bg-gradient-to-r from-maroon to-saffron bg-clip-text text-transparent">Checkout</h1>
+                <h1 className="text-3xl sm:text-4xl font-display font-black tracking-tight mb-6 sm:mb-10 bg-gradient-to-r from-maroon to-saffron bg-clip-text text-transparent">Checkout</h1>
 
                 {/* Progress System */}
-                <div className="flex items-center gap-6 mb-12 max-w-2xl">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${step >= 1 ? 'bg-saffron text-white shadow-glow-saffron rotate-6' : 'bg-white border text-gray-400'}`}>
-                            <MapPin className="w-6 h-6" />
+                <div className="flex items-center gap-2 sm:gap-6 mb-8 sm:mb-12 max-w-2xl w-full">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 ${step >= 1 ? 'bg-saffron text-white shadow-glow-saffron rotate-6' : 'bg-white border text-gray-400'}`}>
+                            <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                         <div className="flex flex-col">
-                            <span className={`text-sm font-black uppercase tracking-widest ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Shipping</span>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase">Delivery details</span>
+                            <span className={`text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest ${step >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Shipping</span>
+                            <span className="hidden sm:block text-[10px] text-gray-400 font-bold uppercase">Delivery details</span>
                         </div>
                     </div>
-                    <div className="flex-1 h-px bg-gray-200 relative overflow-hidden">
+                    <div className="flex-1 h-px bg-gray-200 relative overflow-hidden min-w-[1rem]">
                         <div className={`absolute inset-0 bg-gradient-to-r from-saffron to-maroon transition-all duration-700 ${step >= 2 ? 'translate-x-0' : '-translate-x-full'}`} />
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${step >= 2 ? 'bg-saffron text-white shadow-glow-saffron rotate-6' : 'bg-white border text-gray-400'}`}>
-                            <CreditCard className="w-6 h-6" />
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 ${step >= 2 ? 'bg-saffron text-white shadow-glow-saffron rotate-6' : 'bg-white border text-gray-400'}`}>
+                            <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                         <div className="flex flex-col">
-                            <span className={`text-sm font-black uppercase tracking-widest ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Payment</span>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase">Transaction</span>
+                            <span className={`text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest ${step >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Payment</span>
+                            <span className="hidden sm:block text-[10px] text-gray-400 font-bold uppercase">Transaction</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-10">
+                <div className="grid lg:grid-cols-3 gap-6 lg:gap-10">
                     {/* Main Content */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 min-w-0">
                         {step === 1 ? (
                             <div className="space-y-8 animate-fade-in">
                                 {/* Saved Addresses Selector */}
@@ -223,7 +223,7 @@ const Checkout = () => {
                                                     key={addr._id}
                                                     type="button"
                                                     onClick={() => handleSelectSavedAddress(addr)}
-                                                    className={`group relative p-5 rounded-3xl border-2 text-left transition-all duration-500 backdrop-blur-md overflow-hidden ${selectedAddressId === addr._id
+                                                    className={`group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 text-left transition-all duration-500 backdrop-blur-md overflow-hidden ${selectedAddressId === addr._id
                                                         ? 'border-saffron bg-saffron/5 shadow-glow-saffron sm:scale-[1.02]'
                                                         : 'border-white bg-white/60 hover:border-gray-200'
                                                         }`}
@@ -249,7 +249,7 @@ const Checkout = () => {
                                     </div>
                                 )}
 
-                                <form onSubmit={handleAddressSubmit} className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-8 md:p-10 space-y-8">
+                                <form onSubmit={handleAddressSubmit} className="bg-white rounded-2xl sm:rounded-[2rem] shadow-2xl border border-gray-100 p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-8">
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-2xl font-display font-black">Shipping Details</h2>
                                         <div className="w-12 h-1 bg-gradient-to-r from-saffron to-maroon rounded-full" />
@@ -384,51 +384,51 @@ const Checkout = () => {
                             </div>
                         ) : (
                             <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
-                                <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-8 md:p-10 space-y-8">
+                                <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-2xl border border-gray-100 p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-8">
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-2xl font-display font-black">Payment Method</h2>
                                         <div className="w-12 h-1 bg-gradient-to-r from-saffron to-maroon rounded-full" />
                                     </div>
 
                                     <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'COD' | 'Online')}>
-                                        <div className="grid gap-4">
+                                        <div className="grid gap-3 sm:gap-4">
                                             {[
                                                 { id: 'COD', title: 'Cash on Delivery', desc: 'Securely pay upon delivery', icon: Truck, color: 'emerald' },
                                                 { id: 'Online', title: 'Online Payment', desc: 'Pay instantly via Banking/QR', icon: CreditCard, color: 'blue' }
                                             ].map((item) => (
                                                 <label
                                                     key={item.id}
-                                                    className={`group relative flex items-center gap-5 p-6 rounded-3xl border-2 cursor-pointer transition-all duration-500 ${paymentMethod === item.id
+                                                    className={`group relative flex items-center gap-3 sm:gap-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 cursor-pointer transition-all duration-500 ${paymentMethod === item.id
                                                         ? `border-${item.color === 'emerald' ? 'green' : 'blue'}-500 bg-${item.color === 'emerald' ? 'green' : 'blue'}-50 shadow-xl`
                                                         : 'border-gray-50 bg-gray-50/30 hover:bg-white hover:border-gray-200'
                                                         }`}
                                                 >
                                                     <RadioGroupItem value={item.id} className="sr-only" />
-                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${paymentMethod === item.id ? `bg-${item.color === 'emerald' ? 'green' : 'blue'}-500 text-white rotate-6` : 'bg-white text-gray-400 group-hover:rotate-3'}`}>
-                                                        <item.icon className="w-7 h-7" />
+                                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 ${paymentMethod === item.id ? `bg-${item.color === 'emerald' ? 'green' : 'blue'}-500 text-white rotate-6` : 'bg-white text-gray-400 group-hover:rotate-3'}`}>
+                                                        <item.icon className="w-5 h-5 sm:w-7 sm:h-7" />
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-black text-gray-900">{item.title}</p>
-                                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-tight">{item.desc}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-black text-sm sm:text-base text-gray-900 truncate">{item.title}</p>
+                                                        <p className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-tight truncate">{item.desc}</p>
                                                     </div>
-                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === item.id ? `border-${item.color === 'emerald' ? 'green' : 'blue'}-500 bg-${item.color === 'emerald' ? 'green' : 'blue'}-500` : 'border-gray-200'}`}>
-                                                        {paymentMethod === item.id && <div className="w-2 h-2 rounded-full bg-white" />}
+                                                    <div className={`w-5 h-5 sm:w-6 sm:h-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === item.id ? `border-${item.color === 'emerald' ? 'green' : 'blue'}-500 bg-${item.color === 'emerald' ? 'green' : 'blue'}-500` : 'border-gray-200'}`}>
+                                                        {paymentMethod === item.id && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />}
                                                     </div>
                                                 </label>
                                             ))}
                                         </div>
                                     </RadioGroup>
 
-                                    <div className="flex gap-4 pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
                                         <Button
                                             variant="outline"
                                             onClick={() => setStep(1)}
-                                            className="h-14 px-8 rounded-2xl border-gray-200 font-bold hover:bg-gray-50"
+                                            className="h-12 sm:h-14 px-8 rounded-xl sm:rounded-2xl border-gray-200 font-bold hover:bg-gray-50 w-full sm:w-auto"
                                         >
                                             Back to Shipping
                                         </Button>
                                         <Button
-                                            className="flex-1 h-14 bg-gradient-to-r from-saffron to-saffron-600 hover:scale-[1.02] text-white rounded-2xl font-black shadow-xl transition-all duration-500"
+                                            className="flex-1 h-12 sm:h-14 bg-gradient-to-r from-saffron to-saffron-600 hover:scale-[1.02] text-white rounded-xl sm:rounded-2xl font-black shadow-xl transition-all duration-500 w-full"
                                             onClick={handlePlaceOrder}
                                             disabled={isProcessing}
                                         >
@@ -437,7 +437,7 @@ const Checkout = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex items-start gap-4">
+                                <div className="bg-amber-50 border border-amber-100 p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex items-start gap-3 sm:gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                                         <CheckCircle className="w-5 h-5 text-amber-600" />
                                     </div>
@@ -450,9 +450,9 @@ const Checkout = () => {
                     </div>
 
                     {/* Order Summary - Premium Glass */}
-                    <div className="lg:sticky lg:top-24 h-fit">
-                        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden">
-                            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                    <div className="lg:sticky lg:top-24 h-fit mb-6 lg:mb-0 min-w-0">
+                        <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden">
+                            <div className="p-5 sm:p-8 border-b border-gray-50 flex items-center justify-between">
                                 <h2 className="text-xl font-display font-black flex items-center gap-3">
                                     <ShoppingBag className="w-5 h-5 text-maroon" />
                                     Order Summary
@@ -460,7 +460,7 @@ const Checkout = () => {
                                 <span className="bg-maroon/5 text-maroon text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">{items.length} Items</span>
                             </div>
 
-                            <div className="p-8 space-y-6 max-h-[50vh] overflow-y-auto custom-scrollbar">
+                            <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 max-h-[50vh] overflow-y-auto custom-scrollbar">
                                 {items.map((item) => (
                                     <div key={item.productId} className="flex gap-4 group">
                                         <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -477,7 +477,7 @@ const Checkout = () => {
                                 ))}
                             </div>
 
-                            <div className="p-8 bg-gray-50/50 space-y-4">
+                            <div className="p-5 sm:p-8 bg-gray-50/50 space-y-4">
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-bold uppercase tracking-tight text-xs">Subtotal</span>

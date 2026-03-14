@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf .next && next build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static",
+    "build": "rimraf .next && next build && node -e \"const fs=require('fs'); fs.cpSync('public', '.next/standalone/public', {recursive:true}); fs.cpSync('.next/static', '.next/standalone/.next/static', {recursive:true});\"",
     "start": "node .next/standalone/server.js",
     "lint": "next lint"
   },
