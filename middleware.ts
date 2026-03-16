@@ -60,12 +60,12 @@ export function middleware(request: NextRequest) {
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://unpkg.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
-        connect-src 'self' https://unpkg.com;
+        connect-src 'self' https://unpkg.com https://uatbfssecure.rma.org.bt https://bfssecure.rma.org.bt;
         img-src 'self' data: blob: https: http:;
         font-src 'self' https://fonts.gstatic.com data:;
         object-src 'none';
         base-uri 'self';
-        form-action 'self';
+        form-action 'self' https://uatbfssecure.rma.org.bt https://bfssecure.rma.org.bt;
         frame-ancestors 'none';
         block-all-mixed-content;
         upgrade-insecure-requests;

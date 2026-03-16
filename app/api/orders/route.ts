@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
         await connectDB();
         const body = await req.json();
         const { items, shippingAddress, paymentMethod, guestInfo, isGuest = false, notes } = body;
+        console.log('[ORDERS] Received POST body:', JSON.stringify({ items: items?.length, paymentMethod, isGuest, hasShipping: !!shippingAddress }));
 
         let subtotal = 0;
         const orderItems = [];
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
             const product = await Product.findById(item.productId);
             if (!product) return NextResponse.json({ message: `Product not found: ${item.productId}` }, { status: 404 });
             if (product.stock < item.quantity) {
+                console.log('[ORDERS] Stock check failed:', { title: product.title, stock: product.stock, requested: item.quantity });
                 return NextResponse.json({ message: `Insufficient stock for ${product.title}. Available: ${product.stock}` }, { status: 400 });
             }
 

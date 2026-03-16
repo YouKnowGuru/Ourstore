@@ -15,13 +15,12 @@ import BfsTransaction from '@/lib/models/BfsTransaction';
 import { createARMessage, generateAutoSubmitForm } from '@/lib/bfs/bfsSecure';
 
 /**
- * Generate a unique BFS-compatible order number.
- * Format: BFS + timestamp + random suffix (max 20 chars)
+ * Generate a unique, short BFS-compatible order number.
+ * Format: BFS + random suffix (max 12 chars total) to avoid length validation errors.
  */
 function generateBfsOrderNo(): string {
-  const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `BFS${ts}${rand}`.slice(0, 20);
+  const rand = Math.random().toString(36).substring(2, 9).toUpperCase();
+  return `BFS${rand}`;
 }
 
 export async function GET() {
@@ -37,6 +36,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { orderId, remitterEmail } = body;
+    console.log('[BFS-API-V3] Received request for orderId:', orderId);
 
     if (!orderId) {
       return NextResponse.json(
@@ -100,7 +100,8 @@ export async function POST(req: NextRequest) {
 
     // ── 4. Build AR message ───────────────────────────────────────
     const email = remitterEmail || order.guestInfo?.email || '';
-    const paymentDesc = `Order #${order.orderNumber}`;
+    const cleanOrderNumber = order.orderNumber.replace(/[^a-zA-Z0-9]/g, '');
+    const paymentDesc = `Order ${cleanOrderNumber}`;
 
     const { fields, paymentUrl, sourceString } = createARMessage({
       orderNo,
@@ -129,12 +130,17 @@ export async function POST(req: NextRequest) {
       `[BFS] AR created: orderNo=${orderNo}, orderId=${orderId}, amount=${order.total}`
     );
 
-    // ── 6. Generate auto-submit HTML form ─────────────────────────
-    const html = generateAutoSubmitForm(fields, paymentUrl);
-
-    return new NextResponse(html, {
-      status: 200,
-      headers: { 'Content-Type': 'text/html' },
+    console.log('[BFS-API-V3] Returning JSON response for orderNo:', orderNo);
+    // ── 6. Return payment data as JSON ───────────────────────────
+    return NextResponse.json({
+      success: true,
+      orderNo,
+      orderId: order._id,
+      paymentUrl,
+      fields,
+    }, { 
+        status: 200,
+        headers: { 'X-BFS-Version': 'V3' }
     });
   } catch (error: unknown) {
     const err = error as Error;

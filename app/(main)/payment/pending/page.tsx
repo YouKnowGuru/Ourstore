@@ -4,15 +4,21 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { Clock, RefreshCw, Home, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/lib/hooks/useCart';
 import Link from 'next/link';
 
 const POLL_INTERVAL = 10000; // 10 seconds
 const MAX_POLLS = 30;        // 5 minutes total
 
 function PendingContent() {
+    const { emptyCart } = useCart();
     const searchParams = useSearchParams();
     const router = useRouter();
     const orderNo = searchParams.get('orderNo') || '';
+
+    useEffect(() => {
+        emptyCart();
+    }, [emptyCart]);
 
     const [pollCount, setPollCount] = useState(0);
     const [statusMessage, setStatusMessage] = useState('Waiting for payment confirmation from BFS Secure…');

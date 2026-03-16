@@ -62,7 +62,10 @@ export function buildSourceString(fields: Record<string, string>): string {
     .filter((k) => k.toLowerCase() !== 'bfs_checksum')
     .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
-  return sortedKeys.map((k) => fields[k]).join('|');
+  const sourceString = sortedKeys.map((k) => fields[k]).join('|');
+  console.log('[BFS-DEBUG] Source string keys:', sortedKeys);
+  console.log('[BFS-DEBUG] Source string:', sourceString);
+  return sourceString;
 }
 
 /**

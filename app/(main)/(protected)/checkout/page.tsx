@@ -67,10 +67,10 @@ const Checkout = () => {
     const grandTotal = total + shippingFee + tax;
 
     useEffect(() => {
-        if (items.length === 0) {
+        if (items.length === 0 && !isProcessing) {
             router.push('/cart');
         }
-    }, [items, router]);
+    }, [items, router, isProcessing]);
 
     if (items.length === 0) {
         return null;
@@ -135,6 +135,7 @@ const Checkout = () => {
             // ── BFS Online Payment Flow ───────────────────────────
             if (paymentMethod === 'Online') {
                 try {
+                    console.log('[BFS] Initiating payment for order:', orderId);
                     const payRes = await fetch('/api/payment/create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -149,28 +150,35 @@ const Checkout = () => {
                         throw new Error(errData.message || 'Failed to initiate payment');
                     }
 
-                    // Response is an HTML auto-submit form — write it to the page
-                    const html = await payRes.text();
-                    emptyCart();
-                    document.open();
-                    document.write(html);
-                    document.close();
-                    return; // Page will redirect to BFS Secure
+                    const payData = await payRes.json();
+                    const { fields, paymentUrl } = payData;
+                    
+                    console.log('[BFS-FE-V3] Gateway URL:', paymentUrl);
+                    console.log('[BFS-FE-V3] Fields:', fields);
+
+                    // Navigate to dedicated redirect page
+                    const redirectUrl = `/payment/redirect?paymentUrl=${encodeURIComponent(paymentUrl)}&fields=${encodeURIComponent(JSON.stringify(fields))}`;
+                    console.log('[BFS-FE-V3] Navigating to redirect page...');
+                    window.location.href = redirectUrl;
+                    return; 
                 } catch (payErr: unknown) {
                     const e = payErr as Error;
+                    console.error('[BFS] Redirect error:', e);
                     toast.error(e.message || 'Payment gateway error. Please try again.');
                     setIsProcessing(false);
                     return;
                 }
             }
 
-            // ── COD Flow (unchanged) ─────────────────────────────
+            // ── COD Flow ─────────────────────────────────────────
+            console.log('[COD] Order successful, clearing cart');
             emptyCart();
             toast.success('Order placed successfully!');
             router.push(`/order-success?orderId=${orderId}`);
+            setIsProcessing(false);
         } catch (error: any) {
+            console.error('[Checkout] Error:', error);
             toast.error(error?.data?.message || 'Failed to place order');
-        } finally {
             setIsProcessing(false);
         }
     };

@@ -11,6 +11,7 @@ import {
   BFS_BANK_CODE,
   BFS_VERSION,
   BFS_PAYMENT_URL,
+  BFS_RETURN_URL,
   BFS_STATUS_URL,
   BFS_FIELDS,
   BFS_AC_FIELDS,
@@ -72,6 +73,7 @@ export function createARMessage(params: ARMessageParams) {
     [BFS_FIELDS.TXN_AMOUNT]: amount.toFixed(2),
     [BFS_FIELDS.REMITTER_EMAIL]: remitterEmail,
     [BFS_FIELDS.PAYMENT_DESC]: paymentDesc,
+    [BFS_FIELDS.RETURN_URL]: BFS_RETURN_URL,
     [BFS_FIELDS.VERSION]: BFS_VERSION,
   };
 

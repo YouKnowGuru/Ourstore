@@ -33,6 +33,7 @@ export const BFS_FIELDS = {
   TXN_AMOUNT: 'bfs_txnAmount',
   REMITTER_EMAIL: 'bfs_remitterEmail',
   PAYMENT_DESC: 'bfs_paymentDesc',
+  RETURN_URL: 'bfs_returnUrl',
   VERSION: 'bfs_version',
   CHECKSUM: 'bfs_checkSum',
 } as const;

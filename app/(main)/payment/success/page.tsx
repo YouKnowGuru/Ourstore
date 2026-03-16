@@ -2,13 +2,19 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { CheckCircle, ShoppingBag, ArrowRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/lib/hooks/useCart';
 
 function SuccessContent() {
+    const { emptyCart } = useCart();
     const searchParams = useSearchParams();
     const orderNo = searchParams.get('orderNo') || '';
+
+    useEffect(() => {
+        emptyCart();
+    }, [emptyCart]);
 
     return (
         <div className="pt-24 pb-16 min-h-screen bg-gradient-to-b from-green-50/50 via-bhutan-cream to-bhutan-cream">
