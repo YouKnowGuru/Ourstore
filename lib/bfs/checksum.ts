@@ -20,11 +20,19 @@ let _publicKey: string | null = null;
 
 function getPrivateKey(): string {
   if (!_privateKey) {
+    // 1. Check if the key is provided directly as an environment variable
+    const directKey = process.env.BFS_PRIVATE_KEY;
+    if (directKey && directKey.includes('-----BEGIN')) {
+      _privateKey = directKey.replace(/\\n/g, '\n');
+      return _privateKey;
+    }
+
+    // 2. Fallback to reading from file path
     const keyPath = path.resolve(process.cwd(), BFS_PRIVATE_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
-        `BFS private key not found at ${keyPath}. ` +
-        'Generate an RSA key pair or set BFS_PRIVATE_KEY_PATH correctly.'
+        `BFS private key not found at ${keyPath} and BFS_PRIVATE_KEY env var is not set. ` +
+        'Generate an RSA key pair or set the keys correctly.'
       );
     }
     _privateKey = fs.readFileSync(keyPath, 'utf-8');
@@ -34,11 +42,19 @@ function getPrivateKey(): string {
 
 function getPublicKey(): string {
   if (!_publicKey) {
+    // 1. Check if the key is provided directly as an environment variable
+    const directKey = process.env.BFS_PUBLIC_KEY;
+    if (directKey && directKey.includes('-----BEGIN')) {
+      _publicKey = directKey.replace(/\\n/g, '\n');
+      return _publicKey;
+    }
+
+    // 2. Fallback to reading from file path
     const keyPath = path.resolve(process.cwd(), BFS_PUBLIC_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
-        `BFS public key not found at ${keyPath}. ` +
-        'Obtain the BFS Secure public key from RMA or set BFS_PUBLIC_KEY_PATH correctly.'
+        `BFS public key not found at ${keyPath} and BFS_PUBLIC_KEY env var is not set. ` +
+        'Obtain the BFS Secure public key from RMA or set the keys correctly.'
       );
     }
     _publicKey = fs.readFileSync(keyPath, 'utf-8');
