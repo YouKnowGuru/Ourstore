@@ -19,10 +19,16 @@ let _privateKey: string | null = null;
 let _publicKey: string | null = null;
 
 function normalizeKey(key: string): string {
-  return key
-    .trim()                         // Remove leading/trailing whitespace
-    .replace(/^"|"$/g, '')          // Remove surrounding double quotes
-    .replace(/\\n/g, '\n');         // Convert literal \n to actual newlines
+  // 1. Remove surrounding quotes and trim
+  let normalized = key.trim().replace(/^"|"$/g, '').trim();
+
+  // 2. Handle literal escape sequences if present (\n, \r)
+  normalized = normalized.replace(/\\n/g, '\n').replace(/\\r/g, '');
+
+  // 3. Normalize all line endings to \n and remove \r
+  normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '');
+
+  return normalized;
 }
 
 function joinSplitKey(prefix: string): string | null {
@@ -43,6 +49,7 @@ function getPrivateKey(): string {
     if (directKey && directKey.includes('-----BEGIN')) {
       _privateKey = normalizeKey(directKey);
       console.log('[BFS] Loaded private key from environment variable (single or split)');
+      console.log(`[BFS] Private key length: ${_privateKey.length}, starts with: ${_privateKey.substring(0, 20)}..., ends with: ...${_privateKey.substring(_privateKey.length - 20)}`);
       return _privateKey;
     }
 
@@ -68,6 +75,7 @@ function getPublicKey(): string {
     if (directKey && directKey.includes('-----BEGIN')) {
       _publicKey = normalizeKey(directKey);
       console.log('[BFS] Loaded public key from environment variable (single or split)');
+      console.log(`[BFS] Public key length: ${_publicKey.length}, starts with: ${_publicKey.substring(0, 20)}..., ends with: ...${_publicKey.substring(_publicKey.length - 20)}`);
       return _publicKey;
     }
 
