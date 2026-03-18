@@ -15,73 +15,98 @@ import path from 'path';
 import { BFS_PRIVATE_KEY_PATH, BFS_PUBLIC_KEY_PATH } from './constants';
 
 // ── Cached keys (loaded once per process) ───────────────────────────
-let _privateKey: string | null = null;
+let _privateKeyObj: crypto.KeyObject | null = null;
 let _publicKey: string | null = null;
 
-function normalizeKey(key: string): string {
-  // 1. Remove surrounding quotes and trim
-  let normalized = key.trim().replace(/^"|"$/g, '').trim();
-
-  // 2. Handle literal escape sequences if present (\n, \r)
-  normalized = normalized.replace(/\\n/g, '\n').replace(/\\r/g, '');
-
-  // 3. Normalize all line endings to \n and remove \r
-  normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '');
-
-  // 4. Remove any invisible characters/BOM (keep only printable ASCII and newlines)
-  normalized = normalized.replace(/[^\x20-\x7E\n]/g, '');
-
-  // 5. Enforce Strict PEM format (fixes OpenSSL 3.0 "DECODER routines::unsupported" error)
-  const headerMatch = normalized.match(/-----BEGIN [A-Z ]+-----/);
-  const footerMatch = normalized.match(/-----END [A-Z ]+-----/);
-  if (headerMatch && footerMatch) {
-    const header = headerMatch[0];
-    const footer = footerMatch[0];
-    const base64Part = normalized.substring(
-      normalized.indexOf(header) + header.length,
-      normalized.indexOf(footer)
-    );
-    // Remove all whitespace from base64 payload, then wrap at 64 characters
-    const cleanBase64 = base64Part.replace(/\s+/g, '');
-    const lines = cleanBase64.match(/.{1,64}/g) || [];
-    normalized = `${header}\n${lines.join('\n')}\n${footer}\n`;
-  }
-
-  // Debug logging
-  console.log(`[BFS] Normalized key (length ${normalized.length}):`);
-  console.log(`[BFS] Start: [${normalized.substring(0, 30).replace(/\n/g, '\\n')}]`);
-  console.log(`[BFS] End:   [${normalized.substring(normalized.length - 30).replace(/\n/g, '\\n')}]`);
-
-  if (normalized.includes('\r')) console.log('[BFS] WARNING: Key still contains \\r carriage returns!');
-  if (normalized.includes('"')) console.log('[BFS] WARNING: Key still contains double quotes!');
-
-  return normalized;
+/**
+ * Extract raw base64 from a PEM string (or env-var mangled PEM),
+ * stripping headers/footers and all whitespace.
+ */
+function extractBase64FromPEM(raw: string): string {
+  let s = raw.trim().replace(/^"|"$/g, '').trim();
+  // Convert literal \n and \r escape sequences
+  s = s.replace(/\\n/g, '\n').replace(/\\r/g, '');
+  // Normalize line endings
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '');
+  // Remove invisible/BOM characters
+  s = s.replace(/[^\x20-\x7E\n]/g, '');
+  // Strip PEM headers and footers
+  s = s.replace(/-----BEGIN [A-Z ]+-----/g, '');
+  s = s.replace(/-----END [A-Z ]+-----/g, '');
+  // Remove ALL whitespace to get pure base64
+  s = s.replace(/\s+/g, '');
+  return s;
 }
 
-function joinSplitKey(prefix: string): string | null {
+/**
+ * Join split environment variable parts (BFS_PRIVATE_KEY_P1, _P2, etc.)
+ * and return the raw concatenated string.
+ */
+function joinSplitKeyRaw(prefix: string): string | null {
   const parts: string[] = [];
   let i = 1;
   while (process.env[`${prefix}_P${i}`]) {
-    // Normalize each part individually before joining
-    parts.push(normalizeKey(process.env[`${prefix}_P${i}`]!));
+    parts.push(process.env[`${prefix}_P${i}`]!);
     i++;
+  }
+  if (parts.length > 0) {
+    console.log(`[BFS] Found ${parts.length} split parts for ${prefix}`);
   }
   return parts.length > 0 ? parts.join('') : null;
 }
 
-export function getPrivateKey(): string {
-  if (!_privateKey) {
-    // 1. Check for single environment variable or split parts
-    const directKey = process.env.BFS_PRIVATE_KEY || joinSplitKey('BFS_PRIVATE_KEY');
+/**
+ * Load the private key as a crypto.KeyObject using DER format.
+ * This completely bypasses OpenSSL's PEM parser which fails on
+ * Hostinger's OpenSSL 3.0 with "DECODER routines::unsupported".
+ */
+export function getPrivateKeyObject(): crypto.KeyObject {
+  if (!_privateKeyObj) {
+    const rawKey = process.env.BFS_PRIVATE_KEY || joinSplitKeyRaw('BFS_PRIVATE_KEY');
 
-    if (directKey && directKey.includes('-----BEGIN')) {
-      _privateKey = normalizeKey(directKey);
-      console.log('[BFS] Loaded private key from environment variable (single or split)');
-      console.log(`[BFS] Private key length: ${_privateKey.length}, starts with: ${_privateKey.substring(0, 20)}..., ends with: ...${_privateKey.substring(_privateKey.length - 20)}`);
-      return _privateKey;
+    if (rawKey && rawKey.includes('BEGIN')) {
+      const base64 = extractBase64FromPEM(rawKey);
+      console.log(`[BFS] Extracted base64 from env var, length: ${base64.length}`);
+
+      const derBuffer = Buffer.from(base64, 'base64');
+      console.log(`[BFS] DER buffer length: ${derBuffer.length} bytes`);
+
+      // Try PKCS#8 first (-----BEGIN PRIVATE KEY-----), then PKCS#1 (-----BEGIN RSA PRIVATE KEY-----)
+      const isPKCS1 = rawKey.includes('RSA PRIVATE KEY');
+      const keyType = isPKCS1 ? 'pkcs1' : 'pkcs8';
+      console.log(`[BFS] Detected key type: ${keyType}`);
+
+      try {
+        _privateKeyObj = crypto.createPrivateKey({
+          key: derBuffer,
+          format: 'der',
+          type: keyType,
+        });
+        console.log('[BFS] ✅ Private key loaded successfully via DER format');
+      } catch (derErr) {
+        console.error('[BFS] DER load failed, trying alternate type...', (derErr as Error).message);
+        // If PKCS#8 failed, try PKCS#1 and vice versa
+        const altType = isPKCS1 ? 'pkcs8' : 'pkcs1';
+        try {
+          _privateKeyObj = crypto.createPrivateKey({
+            key: derBuffer,
+            format: 'der',
+            type: altType,
+          });
+          console.log(`[BFS] ✅ Private key loaded successfully via DER format (${altType})`);
+        } catch (altErr) {
+          console.error('[BFS] Both DER formats failed. Trying reconstructed PEM as last resort...');
+          // Last resort: reconstruct a clean PEM and try that
+          const lines = base64.match(/.{1,64}/g) || [];
+          const cleanPem = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
+          _privateKeyObj = crypto.createPrivateKey(cleanPem);
+          console.log('[BFS] ✅ Private key loaded via reconstructed PEM');
+        }
+      }
+      return _privateKeyObj;
     }
 
-    // 2. Fallback to reading from file path
+    // Fallback to reading from file path
     const keyPath = path.resolve(process.cwd(), BFS_PRIVATE_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
@@ -89,25 +114,48 @@ export function getPrivateKey(): string {
         'Generate an RSA key pair or set the keys correctly.'
       );
     }
-    _privateKey = fs.readFileSync(keyPath, 'utf-8');
+    const fileContent = fs.readFileSync(keyPath, 'utf-8');
+    _privateKeyObj = crypto.createPrivateKey(fileContent);
     console.log('[BFS] Loaded private key from file:', keyPath);
   }
-  return _privateKey;
+  return _privateKeyObj;
+}
+
+/**
+ * Normalize a PEM public key string for verification.
+ */
+function normalizePublicKey(key: string): string {
+  let s = key.trim().replace(/^"|"$/g, '').trim();
+  s = s.replace(/\\n/g, '\n').replace(/\\r/g, '');
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '');
+  s = s.replace(/[^\x20-\x7E\n]/g, '');
+
+  const headerMatch = s.match(/-----BEGIN [A-Z ]+-----/);
+  const footerMatch = s.match(/-----END [A-Z ]+-----/);
+  if (headerMatch && footerMatch) {
+    const header = headerMatch[0];
+    const footer = footerMatch[0];
+    const base64Part = s.substring(
+      s.indexOf(header) + header.length,
+      s.indexOf(footer)
+    );
+    const cleanBase64 = base64Part.replace(/\s+/g, '');
+    const lines = cleanBase64.match(/.{1,64}/g) || [];
+    s = `${header}\n${lines.join('\n')}\n${footer}\n`;
+  }
+  return s;
 }
 
 export function getPublicKey(): string {
   if (!_publicKey) {
-    // 1. Check for single environment variable or split parts
-    const directKey = process.env.BFS_PUBLIC_KEY || joinSplitKey('BFS_PUBLIC_KEY');
+    const directKey = process.env.BFS_PUBLIC_KEY || joinSplitKeyRaw('BFS_PUBLIC_KEY');
 
     if (directKey && directKey.includes('-----BEGIN')) {
-      _publicKey = normalizeKey(directKey);
-      console.log('[BFS] Loaded public key from environment variable (single or split)');
-      console.log(`[BFS] Public key length: ${_publicKey.length}, starts with: ${_publicKey.substring(0, 20)}..., ends with: ...${_publicKey.substring(_publicKey.length - 20)}`);
+      _publicKey = normalizePublicKey(directKey);
+      console.log('[BFS] Loaded public key from environment variable');
       return _publicKey;
     }
 
-    // 2. Fallback to reading from file path
     const keyPath = path.resolve(process.cwd(), BFS_PUBLIC_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
@@ -131,15 +179,10 @@ export function getPublicKey(): string {
  * @returns       Pipe-separated source string ready for signing
  */
 export function buildSourceString(fields: Record<string, string>): string {
-  // 1. Get all keys except checksum
   const keys = Object.keys(fields).filter(
     (k) => k.toLowerCase() !== 'bfs_checksum' && fields[k] !== undefined
   );
-
-  // 2. Sort keys alphabetically
   keys.sort((a, b) => a.localeCompare(b));
-
-  // 3. Map to values and join with pipe
   const values = keys.map((k) => fields[k] || '');
   const sourceString = values.join('|');
 
@@ -156,11 +199,11 @@ export function buildSourceString(fields: Record<string, string>): string {
  * @returns             Uppercase Hex-encoded signature
  */
 export function signRequest(sourceString: string): string {
-  const privateKey = getPrivateKey();
+  const keyObj = getPrivateKeyObject();
   const signer = crypto.createSign('SHA1');
   signer.update(sourceString);
   signer.end();
-  return signer.sign(privateKey, 'hex').toUpperCase();
+  return signer.sign(keyObj, 'hex').toUpperCase();
 }
 
 /**
