@@ -35,7 +35,8 @@ function joinSplitKey(prefix: string): string | null {
   const parts: string[] = [];
   let i = 1;
   while (process.env[`${prefix}_P${i}`]) {
-    parts.push(process.env[`${prefix}_P${i}`]!);
+    // Normalize each part individually before joining
+    parts.push(normalizeKey(process.env[`${prefix}_P${i}`]!));
     i++;
   }
   return parts.length > 0 ? parts.join('') : null;
