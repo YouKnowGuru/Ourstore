@@ -28,6 +28,16 @@ function normalizeKey(key: string): string {
   // 3. Normalize all line endings to \n and remove \r
   normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '');
 
+  // 4. Remove any invisible characters/BOM (keep only printable ASCII and newlines)
+  normalized = normalized.replace(/[^\x20-\x7E\n]/g, '');
+
+  console.log(`[BFS] Normalized key (length ${normalized.length}):`);
+  console.log(`[BFS] Start: [${normalized.substring(0, 30).replace(/\n/g, '\\n')}]`);
+  console.log(`[BFS] End:   [${normalized.substring(normalized.length - 30).replace(/\n/g, '\\n')}]`);
+  
+  if (normalized.includes('\r')) console.log('[BFS] WARNING: Key still contains \\r carriage returns!');
+  if (normalized.includes('"')) console.log('[BFS] WARNING: Key still contains double quotes!');
+
   return normalized;
 }
 
@@ -42,7 +52,7 @@ function joinSplitKey(prefix: string): string | null {
   return parts.length > 0 ? parts.join('') : null;
 }
 
-function getPrivateKey(): string {
+export function getPrivateKey(): string {
   if (!_privateKey) {
     // 1. Check for single environment variable or split parts
     const directKey = process.env.BFS_PRIVATE_KEY || joinSplitKey('BFS_PRIVATE_KEY');
@@ -68,7 +78,7 @@ function getPrivateKey(): string {
   return _privateKey;
 }
 
-function getPublicKey(): string {
+export function getPublicKey(): string {
   if (!_publicKey) {
     // 1. Check for single environment variable or split parts
     const directKey = process.env.BFS_PUBLIC_KEY || joinSplitKey('BFS_PUBLIC_KEY');

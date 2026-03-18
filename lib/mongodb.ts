@@ -3,6 +3,7 @@ import dns from 'dns';
 
 // Force Google DNS to bypass potential local DNS issues in the Node process
 dns.setServers(['8.8.8.8']);
+console.log('[DEBUG-DNS] DNS servers set to 8.8.8.8 in lib/mongodb.ts');
 
 interface MongooseCache {
     conn: typeof mongoose | null;
@@ -25,7 +26,7 @@ async function connectDB(): Promise<typeof mongoose> {
         return cached.conn;
     }
 
-    const MONGODB_URI = process.env.MONGODB_URI;
+    const MONGODB_URI = process.env.MONGODB_URI?.trim();
 
     if (!MONGODB_URI) {
         throw new Error('Please define the MONGODB_URI environment variable');
