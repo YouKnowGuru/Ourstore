@@ -2,6 +2,10 @@ import connectDB from './lib/mongodb';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import dns from 'dns';
+
+// Force Google DNS to bypass potential local DNS issues in Node
+dns.setServers(['8.8.8.8']);
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
