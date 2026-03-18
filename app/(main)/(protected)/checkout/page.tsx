@@ -156,11 +156,25 @@ const Checkout = () => {
                     console.log('[BFS-FE-V3] Gateway URL:', paymentUrl);
                     console.log('[BFS-FE-V3] Fields:', fields);
 
-                    // Navigate to dedicated redirect page
-                    const redirectUrl = `/payment/redirect?paymentUrl=${encodeURIComponent(paymentUrl)}&fields=${encodeURIComponent(JSON.stringify(fields))}`;
-                    console.log('[BFS-FE-V3] Navigating to redirect page...');
-                    window.location.href = redirectUrl;
-                    return; 
+                    // Create and submit a hidden POST form directly — DO NOT pass via URL params
+                    // URL encoding corrupts base64 checksum characters (+, /, =)
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = paymentUrl;
+                    form.style.display = 'none';
+
+                    Object.entries(fields).forEach(([name, value]) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value as string;
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    console.log('[BFS-FE-V3] Submitting POST form directly to BFS...');
+                    form.submit();
+                    return;
                 } catch (payErr: unknown) {
                     const e = payErr as Error;
                     console.error('[BFS] Redirect error:', e);
