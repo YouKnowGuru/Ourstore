@@ -43,5 +43,15 @@ BFS_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA...\n-----END 
 BFS_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG...\n-----END PUBLIC KEY-----"
 ```
 
+### Method C: Splitting Keys (Hostinger Shared Hosting)
+If Hostinger limits the length of environment variables, you can split your key into two or more parts. My code will automatically join them if they follow the `_P1`, `_P2` naming convention:
+
+| Key | Value |
+| :--- | :--- |
+| `BFS_PRIVATE_KEY_P1` | (First half of the key) |
+| `BFS_PRIVATE_KEY_P2` | (Second half of the key) |
+| `BFS_PUBLIC_KEY_P1` | (First half of the public key) |
+| `BFS_PUBLIC_KEY_P2` | (Second half of the public key) |
+
 ## Step 3: Verify
 Restart your application after adding the environment variables. The system will now use these variables automatically instead of looking for files in the `./keys` folder.

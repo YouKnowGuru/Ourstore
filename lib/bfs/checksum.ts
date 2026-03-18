@@ -25,13 +25,24 @@ function normalizeKey(key: string): string {
     .replace(/\\n/g, '\n');         // Convert literal \n to actual newlines
 }
 
+function joinSplitKey(prefix: string): string | null {
+  const parts: string[] = [];
+  let i = 1;
+  while (process.env[`${prefix}_P${i}`]) {
+    parts.push(process.env[`${prefix}_P${i}`]!);
+    i++;
+  }
+  return parts.length > 0 ? parts.join('') : null;
+}
+
 function getPrivateKey(): string {
   if (!_privateKey) {
-    // 1. Check if the key is provided directly as an environment variable
-    const directKey = process.env.BFS_PRIVATE_KEY;
+    // 1. Check for single environment variable or split parts
+    const directKey = process.env.BFS_PRIVATE_KEY || joinSplitKey('BFS_PRIVATE_KEY');
+
     if (directKey && directKey.includes('-----BEGIN')) {
       _privateKey = normalizeKey(directKey);
-      console.log('[BFS] Loaded private key from environment variable');
+      console.log('[BFS] Loaded private key from environment variable (single or split)');
       return _privateKey;
     }
 
@@ -39,7 +50,7 @@ function getPrivateKey(): string {
     const keyPath = path.resolve(process.cwd(), BFS_PRIVATE_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
-        `BFS private key not found at ${keyPath} and BFS_PRIVATE_KEY env var is not set. ` +
+        `BFS private key not found at ${keyPath} and BFS_PRIVATE_KEY (or _P1, _P2...) env var is not set. ` +
         'Generate an RSA key pair or set the keys correctly.'
       );
     }
@@ -51,11 +62,12 @@ function getPrivateKey(): string {
 
 function getPublicKey(): string {
   if (!_publicKey) {
-    // 1. Check if the key is provided directly as an environment variable
-    const directKey = process.env.BFS_PUBLIC_KEY;
+    // 1. Check for single environment variable or split parts
+    const directKey = process.env.BFS_PUBLIC_KEY || joinSplitKey('BFS_PUBLIC_KEY');
+
     if (directKey && directKey.includes('-----BEGIN')) {
       _publicKey = normalizeKey(directKey);
-      console.log('[BFS] Loaded public key from environment variable');
+      console.log('[BFS] Loaded public key from environment variable (single or split)');
       return _publicKey;
     }
 
@@ -63,7 +75,7 @@ function getPublicKey(): string {
     const keyPath = path.resolve(process.cwd(), BFS_PUBLIC_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
-        `BFS public key not found at ${keyPath} and BFS_PUBLIC_KEY env var is not set. ` +
+        `BFS public key not found at ${keyPath} and BFS_PUBLIC_KEY (or _P1, _P2...) env var is not set. ` +
         'Obtain the BFS Secure public key from RMA or set the keys correctly.'
       );
     }
