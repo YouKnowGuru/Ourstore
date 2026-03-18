@@ -74,6 +74,7 @@ export function createARMessage(params: ARMessageParams) {
   const cleanPaymentDesc = sanitizePaymentDesc(paymentDesc);
 
   // Build field map (excluding checksum – added after signing)
+  // NOTE: bfs_returnUrl is NOT included — BFS rejects extra/unexpected fields
   const fields: Record<string, string> = {
     [BFS_FIELDS.MSG_TYPE]: MSG_TYPE.AR,
     [BFS_FIELDS.BENF_TXN_TIME]: benfTxnTime,
@@ -84,7 +85,6 @@ export function createARMessage(params: ARMessageParams) {
     [BFS_FIELDS.TXN_AMOUNT]: amount.toFixed(2),
     [BFS_FIELDS.REMITTER_EMAIL]: remitterEmail,
     [BFS_FIELDS.PAYMENT_DESC]: cleanPaymentDesc,
-    [BFS_FIELDS.RETURN_URL]: BFS_RETURN_URL,
     [BFS_FIELDS.VERSION]: BFS_VERSION,
   };
 
