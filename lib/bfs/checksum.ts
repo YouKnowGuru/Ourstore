@@ -107,36 +107,26 @@ export function getPublicKey(): string {
 /**
  * Build the BFS source string from a set of fields.
  *
- * IMPORTANT: BFS Secure requires EXACTLY these fields in THIS order
- * for checksum calculation. bfs_returnUrl and bfs_checkSum are EXCLUDED.
- *
- * Order:
- *  bfs_benfBankCode | bfs_benfId | bfs_benfTxnTime | bfs_msgType |
- *  bfs_orderNo | bfs_paymentDesc | bfs_remitterEmail |
- *  bfs_txnAmount | bfs_txnCurrency | bfs_version
+ * IMPORTANT: BFS Secure requires fields to be sorted alphabetically
+ * by field name for checksum calculation.
  *
  * @param fields  Key-value map of BFS fields
  * @returns       Pipe-separated source string ready for signing
  */
 export function buildSourceString(fields: Record<string, string>): string {
-  // Fixed field order as per BFS Secure specification
-  const BFS_SOURCE_FIELD_ORDER = [
-    'bfs_benfBankCode',
-    'bfs_benfId',
-    'bfs_benfTxnTime',
-    'bfs_msgType',
-    'bfs_orderNo',
-    'bfs_paymentDesc',
-    'bfs_remitterEmail',
-    'bfs_txnAmount',
-    'bfs_txnCurrency',
-    'bfs_version',
-  ];
+  // 1. Get all keys except checksum
+  const keys = Object.keys(fields).filter(
+    (k) => k.toLowerCase() !== 'bfs_checksum' && fields[k] !== undefined
+  );
 
-  const values = BFS_SOURCE_FIELD_ORDER.map((key) => fields[key] || '');
+  // 2. Sort keys alphabetically
+  keys.sort((a, b) => a.localeCompare(b));
+
+  // 3. Map to values and join with pipe
+  const values = keys.map((k) => fields[k] || '');
   const sourceString = values.join('|');
 
-  console.log('[BFS-DEBUG] Source string field order:', BFS_SOURCE_FIELD_ORDER);
+  console.log('[BFS-DEBUG] Source string keys:', keys);
   console.log('[BFS-DEBUG] Source string values:', values);
   console.log('[BFS-DEBUG] Source string:', sourceString);
   return sourceString;

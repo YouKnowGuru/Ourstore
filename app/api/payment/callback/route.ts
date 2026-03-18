@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
     );
 
     // ── 8. Redirect user to appropriate page ──────────────────────
-    const baseUrl = new URL(req.url).origin;
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || new URL(req.url).origin;
 
     switch (acData.status) {
       case 'SUCCESS':
