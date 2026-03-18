@@ -146,30 +146,30 @@ export function buildSourceString(fields: Record<string, string>): string {
  * Sign a source-string with the merchant's RSA private key using SHA1.
  *
  * @param sourceString  The pipe-separated source string
- * @returns             Base64-encoded signature
+ * @returns             Uppercase Hex-encoded signature
  */
 export function signRequest(sourceString: string): string {
   const privateKey = getPrivateKey();
   const signer = crypto.createSign('SHA1');
   signer.update(sourceString);
   signer.end();
-  return signer.sign(privateKey, 'base64');
+  return signer.sign(privateKey, 'hex').toUpperCase();
 }
 
 /**
  * Verify a BFS response checksum using BFS Secure's RSA public key.
  *
  * @param sourceString  The pipe-separated source string reconstructed from the response
- * @param checksum      Base64-encoded checksum received from BFS
+ * @param checksumHex   Hex-encoded checksum received from BFS
  * @returns             `true` if signature is valid
  */
-export function verifyResponse(sourceString: string, checksum: string): boolean {
+export function verifyResponse(sourceString: string, checksumHex: string): boolean {
   try {
     const publicKey = getPublicKey();
     const verifier = crypto.createVerify('SHA1');
     verifier.update(sourceString);
     verifier.end();
-    return verifier.verify(publicKey, checksum, 'base64');
+    return verifier.verify(publicKey, checksumHex, 'hex');
   } catch (err) {
     console.error('[BFS] Checksum verification failed:', err);
     return false;

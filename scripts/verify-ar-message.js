@@ -33,3 +33,6 @@ console.log('✅ bfs_benfTxnTime format (14 digits):', /^\d{14}$/.test(f.bfs_ben
 
 // Verify source string does NOT contain return URL
 console.log('✅ Source string excludes returnUrl:', !result.sourceString.includes('localhost'));
+console.log('✅ Checksum is hex uppercase:', /^[0-9A-F]+$/.test(result.fields.bfs_checkSum));
+console.log('\nSample Checksum generated:');
+console.log(result.fields.bfs_checkSum);
