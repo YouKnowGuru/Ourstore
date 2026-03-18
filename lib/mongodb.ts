@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Force Google DNS to bypass potential local DNS issues in the Node process
+dns.setServers(['8.8.8.8']);
 
 interface MongooseCache {
     conn: typeof mongoose | null;
