@@ -16,7 +16,7 @@ export const BFS_RETURN_URL =
 // ── Merchant Config ─────────────────────────────────────────────────
 export const BFS_BENEFICIARY_ID = process.env.BFS_BENEFICIARY_ID || '';
 export const BFS_BANK_CODE = process.env.BFS_BANK_CODE || '';
-export const BFS_VERSION = process.env.BFS_VERSION || '2.0';
+export const BFS_VERSION = process.env.BFS_VERSION || '1.0';
 
 // ── Key Paths ───────────────────────────────────────────────────────
 export const BFS_PRIVATE_KEY_PATH = process.env.BFS_PRIVATE_KEY_PATH || './keys/merchant_private.pem';

@@ -107,21 +107,37 @@ export function getPublicKey(): string {
 /**
  * Build the BFS source string from a set of fields.
  *
- * Steps:
- *  1. Exclude the `bfs_checkSum` field itself
- *  2. Sort remaining keys alphabetically (case-insensitive)
- *  3. Join the VALUES with pipe "|"
+ * IMPORTANT: BFS Secure requires EXACTLY these fields in THIS order
+ * for checksum calculation. bfs_returnUrl and bfs_checkSum are EXCLUDED.
  *
- * @param fields  Key-value map of BFS fields (e.g. bfs_msgType → 'AR')
+ * Order:
+ *  bfs_benfBankCode | bfs_benfId | bfs_benfTxnTime | bfs_msgType |
+ *  bfs_orderNo | bfs_paymentDesc | bfs_remitterEmail |
+ *  bfs_txnAmount | bfs_txnCurrency | bfs_version
+ *
+ * @param fields  Key-value map of BFS fields
  * @returns       Pipe-separated source string ready for signing
  */
 export function buildSourceString(fields: Record<string, string>): string {
-  const sortedKeys = Object.keys(fields)
-    .filter((k) => k.toLowerCase() !== 'bfs_checksum')
-    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  // Fixed field order as per BFS Secure specification
+  const BFS_SOURCE_FIELD_ORDER = [
+    'bfs_benfBankCode',
+    'bfs_benfId',
+    'bfs_benfTxnTime',
+    'bfs_msgType',
+    'bfs_orderNo',
+    'bfs_paymentDesc',
+    'bfs_remitterEmail',
+    'bfs_txnAmount',
+    'bfs_txnCurrency',
+    'bfs_version',
+  ];
 
-  const sourceString = sortedKeys.map((k) => fields[k]).join('|');
-  console.log('[BFS-DEBUG] Source string keys:', sortedKeys);
+  const values = BFS_SOURCE_FIELD_ORDER.map((key) => fields[key] || '');
+  const sourceString = values.join('|');
+
+  console.log('[BFS-DEBUG] Source string field order:', BFS_SOURCE_FIELD_ORDER);
+  console.log('[BFS-DEBUG] Source string values:', values);
   console.log('[BFS-DEBUG] Source string:', sourceString);
   return sourceString;
 }

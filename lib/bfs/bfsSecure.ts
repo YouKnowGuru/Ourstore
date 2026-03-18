@@ -52,6 +52,14 @@ export interface ACResponseData {
 // ── AR Message ──────────────────────────────────────────────────────
 
 /**
+ * Sanitize payment description to only contain BFS-allowed characters.
+ * Allowed: alphanumeric, @ / \ ( ) . - _ , & ' and space
+ */
+function sanitizePaymentDesc(desc: string): string {
+  return desc.replace(/[^a-zA-Z0-9@/\\().\-_,&' ]/g, '');
+}
+
+/**
  * Create an Authorization Request message for BFS Secure.
  *
  * @returns Object with `fields` (key-value map) and `paymentUrl`
@@ -61,6 +69,9 @@ export function createARMessage(params: ARMessageParams) {
 
   const now = new Date();
   const benfTxnTime = formatBfsTxnTime(now);
+
+  // Sanitize payment description for BFS-allowed chars only
+  const cleanPaymentDesc = sanitizePaymentDesc(paymentDesc);
 
   // Build field map (excluding checksum – added after signing)
   const fields: Record<string, string> = {
@@ -72,7 +83,7 @@ export function createARMessage(params: ARMessageParams) {
     [BFS_FIELDS.TXN_CURRENCY]: currency || DEFAULT_CURRENCY,
     [BFS_FIELDS.TXN_AMOUNT]: amount.toFixed(2),
     [BFS_FIELDS.REMITTER_EMAIL]: remitterEmail,
-    [BFS_FIELDS.PAYMENT_DESC]: paymentDesc,
+    [BFS_FIELDS.PAYMENT_DESC]: cleanPaymentDesc,
     [BFS_FIELDS.RETURN_URL]: BFS_RETURN_URL,
     [BFS_FIELDS.VERSION]: BFS_VERSION,
   };
@@ -83,6 +94,13 @@ export function createARMessage(params: ARMessageParams) {
 
   // Add checksum to field map
   fields[BFS_FIELDS.CHECKSUM] = checksum;
+
+  // Log the complete payload for debugging
+  console.log('[BFS] === AR Message Payload ===');
+  Object.entries(fields).forEach(([k, v]) => {
+    console.log(`[BFS]   ${k} = ${v}`);
+  });
+  console.log('[BFS] === End Payload ===');
 
   return {
     fields,
