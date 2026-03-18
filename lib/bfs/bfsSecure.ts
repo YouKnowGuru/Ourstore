@@ -139,6 +139,10 @@ export function parseACResponse(body: Record<string, string>): ACResponseData {
   const isValid = verifyResponse(sourceString, checksum);
 
   const authResult = resolveAuthCode(debitAuthCode);
+  
+  if (debitAuthCode && debitAuthCode !== '00') {
+    console.error(`[BFS-BANK-REJECTION] Bank rejected the transaction. Code: ${debitAuthCode}, Reason: ${authResult.message}`);
+  }
 
   return {
     msgType,
