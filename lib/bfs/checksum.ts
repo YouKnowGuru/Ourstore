@@ -193,21 +193,51 @@ export function buildSourceString(fields: Record<string, string>): string {
 }
 
 /**
+ * PKCS#1 v1.5 DigestInfo header for SHA-1.
+ * This is the DER-encoded AlgorithmIdentifier for SHA-1:
+ *   SEQUENCE { SEQUENCE { OID 1.3.14.3.2.26, NULL }, OCTET STRING (20 bytes) }
+ *
+ * OpenSSL 3.0 disables SHA1 in createSign/createVerify ("invalid digest").
+ * We bypass this by manually hashing + using privateEncrypt/publicDecrypt.
+ */
+const SHA1_DIGEST_INFO_PREFIX = Buffer.from(
+  '3021300906052b0e03021a05000414',
+  'hex'
+);
+
+/**
  * Sign a source-string with the merchant's RSA private key using SHA1.
+ *
+ * Uses manual PKCS#1 v1.5 signing to bypass OpenSSL 3.0's SHA1 restriction
+ * in the createSign API ("error:03000098:digital envelope routines::invalid digest").
  *
  * @param sourceString  The pipe-separated source string
  * @returns             Uppercase Hex-encoded signature
  */
 export function signRequest(sourceString: string): string {
   const keyObj = getPrivateKeyObject();
-  const signer = crypto.createSign('SHA1');
-  signer.update(sourceString);
-  signer.end();
-  return signer.sign(keyObj, 'hex').toUpperCase();
+
+  // 1. Compute SHA-1 hash (createHash still allows SHA1 in OpenSSL 3.0)
+  const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+
+  // 2. Build PKCS#1 v1.5 DigestInfo: DER header + hash
+  const digestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+
+  // 3. RSA-sign using privateEncrypt with PKCS1 v1.5 padding
+  //    (this is equivalent to what createSign('SHA1').sign() does internally)
+  const signature = crypto.privateEncrypt(
+    { key: keyObj, padding: crypto.constants.RSA_PKCS1_PADDING },
+    digestInfo
+  );
+
+  console.log('[BFS] ✅ RSA-SHA1 signature created successfully (manual PKCS#1 v1.5)');
+  return signature.toString('hex').toUpperCase();
 }
 
 /**
  * Verify a BFS response checksum using BFS Secure's RSA public key.
+ *
+ * Uses manual PKCS#1 v1.5 verification to bypass OpenSSL 3.0's SHA1 restriction.
  *
  * @param sourceString  The pipe-separated source string reconstructed from the response
  * @param checksumHex   Hex-encoded checksum received from BFS
@@ -216,10 +246,22 @@ export function signRequest(sourceString: string): string {
 export function verifyResponse(sourceString: string, checksumHex: string): boolean {
   try {
     const publicKey = getPublicKey();
-    const verifier = crypto.createVerify('SHA1');
-    verifier.update(sourceString);
-    verifier.end();
-    return verifier.verify(publicKey, checksumHex, 'hex');
+
+    // 1. Compute SHA-1 hash of the source string
+    const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+
+    // 2. Build expected DigestInfo
+    const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+
+    // 3. Decrypt the signature with the public key to get the DigestInfo
+    const signatureBuffer = Buffer.from(checksumHex, 'hex');
+    const decrypted = crypto.publicDecrypt(
+      { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+      signatureBuffer
+    );
+
+    // 4. Compare
+    return decrypted.equals(expectedDigestInfo);
   } catch (err) {
     console.error('[BFS] Checksum verification failed:', err);
     return false;
