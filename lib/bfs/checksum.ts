@@ -208,36 +208,53 @@ const SHA1_DIGEST_INFO_PREFIX = Buffer.from(
 /**
  * Sign a source-string with the merchant's RSA private key using SHA1.
  *
- * Uses manual PKCS#1 v1.5 signing to bypass OpenSSL 3.0's SHA1 restriction
- * in the createSign API ("error:03000098:digital envelope routines::invalid digest").
- *
  * @param sourceString  The pipe-separated source string
  * @returns             Uppercase Hex-encoded signature
  */
 export function signRequest(sourceString: string): string {
   const keyObj = getPrivateKeyObject();
 
-  // 1. Compute SHA-1 hash (createHash still allows SHA1 in OpenSSL 3.0)
-  const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+  try {
+    // Primary: Use crypto.sign() with explicit padding
+    const signature = crypto.sign(
+      'sha1',
+      Buffer.from(sourceString, 'utf8'),
+      {
+        key: keyObj,
+        padding: crypto.constants.RSA_PKCS1_PADDING,
+      }
+    );
 
-  // 2. Build PKCS#1 v1.5 DigestInfo: DER header + hash
-  const digestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+    console.log('[BFS] ✅ RSA-SHA1 signature created via crypto.sign()');
+    return signature.toString('hex').toUpperCase();
+  } catch (error: unknown) {
+    console.error('[BFS] crypto.sign() failed:', (error as Error).message);
 
-  // 3. RSA-sign using privateEncrypt with PKCS1 v1.5 padding
-  //    (this is equivalent to what createSign('SHA1').sign() does internally)
-  const signature = crypto.privateEncrypt(
-    { key: keyObj, padding: crypto.constants.RSA_PKCS1_PADDING },
-    digestInfo
-  );
+    // Fallback: Manual PKCS#1 v1.5 signing via privateEncrypt
+    try {
+      console.log('[BFS] Trying manual PKCS#1 v1.5 signing...');
+      const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+      const digestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
 
-  console.log('[BFS] ✅ RSA-SHA1 signature created successfully (manual PKCS#1 v1.5)');
-  return signature.toString('hex').toUpperCase();
+      // Export as PEM for privateEncrypt (it doesn't accept KeyObject directly)
+      const privateKeyPem = keyObj.export({ type: 'pkcs1', format: 'pem' });
+
+      const signature = crypto.privateEncrypt(
+        { key: privateKeyPem as string, padding: crypto.constants.RSA_PKCS1_PADDING },
+        digestInfo
+      );
+
+      console.log('[BFS] ✅ Manual PKCS#1 v1.5 signing succeeded');
+      return signature.toString('hex').toUpperCase();
+    } catch (fallbackError: unknown) {
+      console.error('[BFS] All signing methods failed:', (fallbackError as Error).message);
+      throw new Error(`BFS signing failed: ${(error as Error).message}`);
+    }
+  }
 }
 
 /**
  * Verify a BFS response checksum using BFS Secure's RSA public key.
- *
- * Uses manual PKCS#1 v1.5 verification to bypass OpenSSL 3.0's SHA1 restriction.
  *
  * @param sourceString  The pipe-separated source string reconstructed from the response
  * @param checksumHex   Hex-encoded checksum received from BFS
@@ -247,21 +264,27 @@ export function verifyResponse(sourceString: string, checksumHex: string): boole
   try {
     const publicKey = getPublicKey();
 
-    // 1. Compute SHA-1 hash of the source string
-    const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
-
-    // 2. Build expected DigestInfo
-    const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
-
-    // 3. Decrypt the signature with the public key to get the DigestInfo
-    const signatureBuffer = Buffer.from(checksumHex, 'hex');
-    const decrypted = crypto.publicDecrypt(
-      { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-      signatureBuffer
-    );
-
-    // 4. Compare
-    return decrypted.equals(expectedDigestInfo);
+    // Primary: Use crypto.verify()
+    try {
+      const isValid = crypto.verify(
+        'sha1',
+        Buffer.from(sourceString, 'utf8'),
+        { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        Buffer.from(checksumHex, 'hex')
+      );
+      return isValid;
+    } catch {
+      // Fallback: Manual PKCS#1 v1.5 verification
+      console.log('[BFS] crypto.verify() failed, trying manual verification...');
+      const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+      const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+      const signatureBuffer = Buffer.from(checksumHex, 'hex');
+      const decrypted = crypto.publicDecrypt(
+        { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        signatureBuffer
+      );
+      return decrypted.equals(expectedDigestInfo);
+    }
   } catch (err) {
     console.error('[BFS] Checksum verification failed:', err);
     return false;
