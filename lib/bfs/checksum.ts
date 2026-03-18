@@ -18,12 +18,20 @@ import { BFS_PRIVATE_KEY_PATH, BFS_PUBLIC_KEY_PATH } from './constants';
 let _privateKey: string | null = null;
 let _publicKey: string | null = null;
 
+function normalizeKey(key: string): string {
+  return key
+    .trim()                         // Remove leading/trailing whitespace
+    .replace(/^"|"$/g, '')          // Remove surrounding double quotes
+    .replace(/\\n/g, '\n');         // Convert literal \n to actual newlines
+}
+
 function getPrivateKey(): string {
   if (!_privateKey) {
     // 1. Check if the key is provided directly as an environment variable
     const directKey = process.env.BFS_PRIVATE_KEY;
     if (directKey && directKey.includes('-----BEGIN')) {
-      _privateKey = directKey.replace(/\\n/g, '\n');
+      _privateKey = normalizeKey(directKey);
+      console.log('[BFS] Loaded private key from environment variable');
       return _privateKey;
     }
 
@@ -36,6 +44,7 @@ function getPrivateKey(): string {
       );
     }
     _privateKey = fs.readFileSync(keyPath, 'utf-8');
+    console.log('[BFS] Loaded private key from file:', keyPath);
   }
   return _privateKey;
 }
@@ -45,7 +54,8 @@ function getPublicKey(): string {
     // 1. Check if the key is provided directly as an environment variable
     const directKey = process.env.BFS_PUBLIC_KEY;
     if (directKey && directKey.includes('-----BEGIN')) {
-      _publicKey = directKey.replace(/\\n/g, '\n');
+      _publicKey = normalizeKey(directKey);
+      console.log('[BFS] Loaded public key from environment variable');
       return _publicKey;
     }
 
@@ -58,6 +68,7 @@ function getPublicKey(): string {
       );
     }
     _publicKey = fs.readFileSync(keyPath, 'utf-8');
+    console.log('[BFS] Loaded public key from file:', keyPath);
   }
   return _publicKey;
 }
