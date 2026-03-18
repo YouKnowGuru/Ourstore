@@ -31,6 +31,23 @@ function normalizeKey(key: string): string {
   // 4. Remove any invisible characters/BOM (keep only printable ASCII and newlines)
   normalized = normalized.replace(/[^\x20-\x7E\n]/g, '');
 
+  // 5. Enforce Strict PEM format (fixes OpenSSL 3.0 "DECODER routines::unsupported" error)
+  const headerMatch = normalized.match(/-----BEGIN [A-Z ]+-----/);
+  const footerMatch = normalized.match(/-----END [A-Z ]+-----/);
+  if (headerMatch && footerMatch) {
+    const header = headerMatch[0];
+    const footer = footerMatch[0];
+    const base64Part = normalized.substring(
+      normalized.indexOf(header) + header.length,
+      normalized.indexOf(footer)
+    );
+    // Remove all whitespace from base64 payload, then wrap at 64 characters
+    const cleanBase64 = base64Part.replace(/\s+/g, '');
+    const lines = cleanBase64.match(/.{1,64}/g) || [];
+    normalized = `${header}\n${lines.join('\n')}\n${footer}\n`;
+  }
+
+  // Debug logging
   console.log(`[BFS] Normalized key (length ${normalized.length}):`);
   console.log(`[BFS] Start: [${normalized.substring(0, 30).replace(/\n/g, '\\n')}]`);
   console.log(`[BFS] End:   [${normalized.substring(normalized.length - 30).replace(/\n/g, '\\n')}]`);
