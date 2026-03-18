@@ -34,7 +34,7 @@ function normalizeKey(key: string): string {
   console.log(`[BFS] Normalized key (length ${normalized.length}):`);
   console.log(`[BFS] Start: [${normalized.substring(0, 30).replace(/\n/g, '\\n')}]`);
   console.log(`[BFS] End:   [${normalized.substring(normalized.length - 30).replace(/\n/g, '\\n')}]`);
-  
+
   if (normalized.includes('\r')) console.log('[BFS] WARNING: Key still contains \\r carriage returns!');
   if (normalized.includes('"')) console.log('[BFS] WARNING: Key still contains double quotes!');
 
