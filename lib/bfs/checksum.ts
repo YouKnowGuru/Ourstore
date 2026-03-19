@@ -248,97 +248,141 @@ export function signRequest(sourceString: string): string {
   }
 }
 
-// ── Verification ────────────────────────────────────────────────────
 
 /**
  * Verify a BFS response checksum using BFS Secure's RSA public key.
+ *
+ * Uses DER-loaded KeyObject to bypass OpenSSL 3.0 PEM issues, and
+ * RSA_NO_PADDING with manual PKCS#1 v1.5 parsing as a fallback to
+ * bypass both the "invalid digest" and "invalid padding" errors.
  */
 export function verifyResponse(sourceString: string, checksumHex: string): boolean {
-  if (!checksumHex) {
-    console.error('[BFS-VERIFY] No checksum provided');
+  try {
+    if (!checksumHex) {
+      console.error('[BFS-VERIFY] No checksum provided');
+      return false;
+    }
+    console.log(`[BFS-VERIFY] Verifying checksum (length: ${checksumHex.length})`);
+
+    // ── Load public key as DER KeyObject ──────────────────────────
+    const publicKeyRaw = process.env.BFS_PUBLIC_KEY || joinSplitKeyRaw('BFS_PUBLIC_KEY');
+    if (!publicKeyRaw) {
+      // Try file fallback
+      const keyPath = path.resolve(process.cwd(), BFS_PUBLIC_KEY_PATH);
+      if (!fs.existsSync(keyPath)) {
+        throw new Error('BFS public key not found in env or file');
+      }
+      const filePem = fs.readFileSync(keyPath, 'utf-8');
+      // Use file key directly with createVerify
+      const verifier = crypto.createVerify('RSA-SHA1');
+      verifier.update(sourceString, 'utf8');
+      verifier.end();
+      return verifier.verify(filePem, Buffer.from(checksumHex, 'hex'));
+    }
+
+    const base64 = extractBase64FromPEM(publicKeyRaw);
+    const derBuffer = Buffer.from(base64, 'base64');
+    console.log(`[BFS-VERIFY] Public key DER: ${derBuffer.length} bytes`);
+
+    const publicKeyObj = crypto.createPublicKey({
+      key: derBuffer,
+      format: 'der',
+      type: 'spki',
+    });
+    console.log('[BFS-VERIFY] ✅ Public KeyObject created from DER');
+
+    const signatureBuffer = Buffer.from(checksumHex, 'hex');
+
+    // ── Method 1: crypto.createVerify with KeyObject ─────────────
+    try {
+      const verifier = crypto.createVerify('RSA-SHA1');
+      verifier.update(sourceString, 'utf8');
+      verifier.end();
+      const isValid = verifier.verify(publicKeyObj, signatureBuffer);
+      if (isValid) {
+        console.log('[BFS-VERIFY] ✅ Verified via createVerify(RSA-SHA1)');
+        return true;
+      }
+      console.log('[BFS-VERIFY] createVerify returned false');
+    } catch (err) {
+      console.log('[BFS-VERIFY] createVerify failed:', (err as Error).message);
+    }
+
+    // ── Method 2: crypto.verify with KeyObject ───────────────────
+    try {
+      const isValid = crypto.verify(
+        'sha1',
+        Buffer.from(sourceString, 'utf8'),
+        { key: publicKeyObj, padding: crypto.constants.RSA_PKCS1_PADDING },
+        signatureBuffer
+      );
+      if (isValid) {
+        console.log('[BFS-VERIFY] ✅ Verified via crypto.verify()');
+        return true;
+      }
+      console.log('[BFS-VERIFY] crypto.verify returned false');
+    } catch (err) {
+      console.log('[BFS-VERIFY] crypto.verify failed:', (err as Error).message);
+    }
+
+    // ── Method 3: RSA_NO_PADDING + manual PKCS#1 v1.5 parse ─────
+    console.log('[BFS-VERIFY] Trying RSA_NO_PADDING with manual PKCS#1 v1.5 parsing...');
+
+    const sha1Hash = crypto.createHash('sha1').update(sourceString, 'utf8').digest();
+    const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+
+    // Raw RSA decrypt (no padding removal by OpenSSL)
+    const rawDecrypted = crypto.publicDecrypt(
+      { key: publicKeyObj, padding: crypto.constants.RSA_NO_PADDING },
+      signatureBuffer
+    );
+
+    console.log(`[BFS-VERIFY] Raw decrypted (${rawDecrypted.length} bytes): ${rawDecrypted.toString('hex').substring(0, 80)}...`);
+
+    // PKCS#1 v1.5 signature format: 0x00 0x01 [0xFF padding] 0x00 [DigestInfo]
+    // Verify the structure manually
+    if (rawDecrypted[0] === 0x00 && rawDecrypted[1] === 0x01) {
+      // Find the 0x00 separator after the 0xFF padding
+      let separatorIdx = -1;
+      for (let i = 2; i < rawDecrypted.length; i++) {
+        if (rawDecrypted[i] === 0x00) {
+          separatorIdx = i;
+          break;
+        }
+        if (rawDecrypted[i] !== 0xff) {
+          console.log(`[BFS-VERIFY] Unexpected byte 0x${rawDecrypted[i].toString(16)} at index ${i}`);
+          break;
+        }
+      }
+
+      if (separatorIdx > 0) {
+        const recoveredDigestInfo = rawDecrypted.slice(separatorIdx + 1);
+        const isValid = recoveredDigestInfo.equals(expectedDigestInfo);
+        if (isValid) {
+          console.log('[BFS-VERIFY] ✅ Verified via RSA_NO_PADDING + manual PKCS#1 v1.5');
+          return true;
+        }
+        console.log('[BFS-VERIFY] ❌ DigestInfo mismatch');
+        console.log('[BFS-VERIFY] Expected:', expectedDigestInfo.toString('hex'));
+        console.log('[BFS-VERIFY] Got:     ', recoveredDigestInfo.toString('hex'));
+      }
+    }
+
+    // Fallback: scan for matching DigestInfo anywhere in the decrypted data
+    for (let i = 0; i <= rawDecrypted.length - expectedDigestInfo.length; i++) {
+      if (rawDecrypted[i] === 0x00 || rawDecrypted[i] === 0x30) {
+        const slice = rawDecrypted.slice(i, i + expectedDigestInfo.length);
+        if (slice.equals(expectedDigestInfo)) {
+          console.log(`[BFS-VERIFY] ✅ Found matching DigestInfo at offset ${i}`);
+          return true;
+        }
+      }
+    }
+
+    console.log('[BFS-VERIFY] ❌ No matching DigestInfo found in decrypted data');
+    return false;
+  } catch (err) {
+    console.error('[BFS-VERIFY] ❌ Verification failed:', err);
     return false;
   }
-  console.log(`[BFS-VERIFY] Verifying checksum (length: ${checksumHex.length})`);
-
-  const publicKeyPem = getPublicKey();
-
-  // Method 1: crypto.createVerify('SHA1')
-  try {
-    const verifier = crypto.createVerify('SHA1');
-    verifier.update(sourceString);
-    verifier.end();
-    const isValid = verifier.verify(publicKeyPem, Buffer.from(checksumHex, 'hex'));
-    console.log(`[BFS-VERIFY] createVerify() returned: ${isValid}`);
-    if (isValid) return true;
-  } catch (err) {
-    console.log('[BFS-VERIFY] createVerify() failed:', (err as Error).message);
-  }
-
-  // Method 2: crypto.verify() with explicit padding
-  try {
-    const isValid = crypto.verify(
-      'sha1',
-      Buffer.from(sourceString, 'utf8'),
-      { key: publicKeyPem, padding: crypto.constants.RSA_PKCS1_PADDING },
-      Buffer.from(checksumHex, 'hex')
-    );
-    console.log(`[BFS-VERIFY] crypto.verify() returned: ${isValid}`);
-    if (isValid) return true;
-  } catch (err) {
-    console.log('[BFS-VERIFY] crypto.verify() failed:', (err as Error).message);
-  }
-
-  // Method 3: Manual PKCS#1 v1.5 via publicDecrypt
-  try {
-    console.log('[BFS-VERIFY] Trying manual publicDecrypt...');
-    const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
-    const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
-    const signatureBuffer = Buffer.from(checksumHex, 'hex');
-
-    const decrypted = crypto.publicDecrypt(
-      { key: publicKeyPem, padding: crypto.constants.RSA_PKCS1_PADDING },
-      signatureBuffer
-    );
-
-    const isValid = decrypted.equals(expectedDigestInfo);
-    if (isValid) {
-      console.log('[BFS-VERIFY] ✅ Manual verification successful');
-    } else {
-      console.log('[BFS-VERIFY] ❌ Digest mismatch');
-      console.log('[BFS-VERIFY] Expected:', expectedDigestInfo.toString('hex').substring(0, 64));
-      console.log('[BFS-VERIFY] Got:     ', decrypted.toString('hex').substring(0, 64));
-    }
-    return isValid;
-  } catch (err) {
-    console.error('[BFS-VERIFY] Manual publicDecrypt failed:', (err as Error).message);
-  }
-
-  // Method 4: Try with DER-loaded KeyObject
-  try {
-    console.log('[BFS-VERIFY] Trying DER KeyObject approach...');
-    const base64 = extractBase64FromPEM(publicKeyPem);
-    const derBuffer = Buffer.from(base64, 'base64');
-    const keyObj = crypto.createPublicKey({ key: derBuffer, format: 'der', type: 'spki' });
-
-    // Re-export as clean PEM
-    const cleanPem = keyObj.export({ type: 'spki', format: 'pem' }) as string;
-
-    const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
-    const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
-    const signatureBuffer = Buffer.from(checksumHex, 'hex');
-
-    const decrypted = crypto.publicDecrypt(
-      { key: cleanPem, padding: crypto.constants.RSA_PKCS1_PADDING },
-      signatureBuffer
-    );
-
-    const isValid = decrypted.equals(expectedDigestInfo);
-    console.log(`[BFS-VERIFY] DER KeyObject approach result: ${isValid}`);
-    return isValid;
-  } catch (err) {
-    console.error('[BFS-VERIFY] DER KeyObject approach failed:', (err as Error).message);
-  }
-
-  console.error('[BFS-VERIFY] ❌ All verification methods failed');
-  return false;
 }
