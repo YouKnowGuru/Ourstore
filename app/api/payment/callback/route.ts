@@ -42,19 +42,31 @@ export async function POST(req: NextRequest) {
     console.log('[BFS] AC callback received:', JSON.stringify(body));
 
     // ── Helper to resolve the correct Base URL ────────────────────
+    // BFS callback is a server-to-server POST — no browser headers.
+    // req.url / host will be internal (0.0.0.0:3000). We must resolve
+    // the actual public domain.
     function getBaseUrl(): string {
-      let envUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
-      if (envUrl && !envUrl.includes('0.0.0.0')) {
-        return envUrl;
+      // 1. Check explicitly configured env var
+      const envUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
+      if (envUrl && !envUrl.includes('0.0.0.0') && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        return envUrl.replace(/\/$/, '');
       }
-      const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-      const proto = req.headers.get('x-forwarded-proto') || 'https';
-      if (host) {
-        return `${proto}://${host}`;
+      // 2. Try forwarded headers (works when behind Nginx with proper proxy config)
+      const fwdHost = req.headers.get('x-forwarded-host');
+      const fwdProto = req.headers.get('x-forwarded-proto') || 'https';
+      if (fwdHost && !fwdHost.includes('0.0.0.0')) {
+        return `${fwdProto}://${fwdHost}`;
       }
-      return new URL(req.url).origin;
+      // 3. Try regular host header
+      const host = req.headers.get('host');
+      if (host && !host.includes('0.0.0.0') && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+        return `https://${host}`;
+      }
+      // 4. Hardcoded production fallback
+      return 'https://ourstore.tech';
     }
     const baseUrl = getBaseUrl();
+    console.log('[BFS] Resolved redirect baseUrl:', baseUrl);
 
     // ── 2. Parse and validate AC response ─────────────────────────
     const acData = parseACResponse(body);
@@ -143,11 +155,8 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     const err = error as Error;
     console.error('[BFS] Callback processing error:', err);
-    // Best effort redirect if baseUrl isn't defined yet
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'ourstore.tech';
-    const proto = req.headers.get('x-forwarded-proto') || 'https';
     return NextResponse.redirect(
-      `${proto}://${host}/payment/failure?reason=server_error`
+      'https://ourstore.tech/payment/failure?reason=server_error'
     );
   }
 }
