@@ -261,8 +261,15 @@ export function signRequest(sourceString: string): string {
  * @returns             `true` if signature is valid
  */
 export function verifyResponse(sourceString: string, checksumHex: string): boolean {
+  if (!checksumHex) {
+    console.error('[BFS-VERIFY] No checksum provided — cannot verify');
+    return false;
+  }
+  console.log(`[BFS-VERIFY] Attempting verification, checksum length: ${checksumHex.length}`);
+
   try {
     const publicKey = getPublicKey();
+    console.log(`[BFS-VERIFY] Public key loaded, length: ${publicKey.length}`);
 
     // Primary: Use crypto.verify()
     try {
@@ -272,21 +279,31 @@ export function verifyResponse(sourceString: string, checksumHex: string): boole
         { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
         Buffer.from(checksumHex, 'hex')
       );
+      console.log(`[BFS-VERIFY] crypto.verify() returned: ${isValid}`);
       return isValid;
-    } catch {
+    } catch (verifyErr) {
+      console.log('[BFS-VERIFY] crypto.verify() failed:', (verifyErr as Error).message);
+
       // Fallback: Manual PKCS#1 v1.5 verification
-      console.log('[BFS] crypto.verify() failed, trying manual verification...');
-      const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
-      const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
-      const signatureBuffer = Buffer.from(checksumHex, 'hex');
-      const decrypted = crypto.publicDecrypt(
-        { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-        signatureBuffer
-      );
-      return decrypted.equals(expectedDigestInfo);
+      console.log('[BFS-VERIFY] Trying manual publicDecrypt verification...');
+      try {
+        const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+        const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+        const signatureBuffer = Buffer.from(checksumHex, 'hex');
+        const decrypted = crypto.publicDecrypt(
+          { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+          signatureBuffer
+        );
+        const isValid = decrypted.equals(expectedDigestInfo);
+        console.log(`[BFS-VERIFY] Manual verification result: ${isValid}`);
+        return isValid;
+      } catch (manualErr) {
+        console.error('[BFS-VERIFY] Manual publicDecrypt also failed:', (manualErr as Error).message);
+        return false;
+      }
     }
   } catch (err) {
-    console.error('[BFS] Checksum verification failed:', err);
+    console.error('[BFS-VERIFY] Checksum verification failed entirely:', err);
     return false;
   }
 }

@@ -118,6 +118,12 @@ export function createARMessage(params: ARMessageParams) {
  * @returns     Parsed AC data with validity flag
  */
 export function parseACResponse(body: Record<string, string>): ACResponseData {
+  console.log('[BFS-AC] === Raw AC Response Fields ===');
+  Object.entries(body).forEach(([k, v]) => {
+    console.log(`[BFS-AC]   ${k} = ${v}`);
+  });
+  console.log('[BFS-AC] === End Raw Fields ===');
+
   const msgType = body[BFS_AC_FIELDS.MSG_TYPE] || '';
   const orderNo = body[BFS_AC_FIELDS.ORDER_NO] || '';
   const benfId = body[BFS_AC_FIELDS.BENF_ID] || '';
@@ -129,14 +135,43 @@ export function parseACResponse(body: Record<string, string>): ACResponseData {
   const debitAuthCode = body[BFS_AC_FIELDS.DEBIT_AUTH_CODE] || '';
   const debitAuthNo = body[BFS_AC_FIELDS.DEBIT_AUTH_NO] || '';
   const txnId = body[BFS_AC_FIELDS.TXN_ID] || '';
-  const checksum = body[BFS_AC_FIELDS.CHECKSUM] || '';
 
-  // Rebuild source string from response fields (excluding checksum)
+  // Case-insensitive checksum extraction — BFS may send bfs_checkSum or bfs_checksum
+  let checksum = body[BFS_AC_FIELDS.CHECKSUM] || '';
+  let checksumFieldName: string = BFS_AC_FIELDS.CHECKSUM;
+  if (!checksum) {
+    // Try to find the checksum field case-insensitively
+    const checksumKey = Object.keys(body).find(
+      (k) => k.toLowerCase() === 'bfs_checksum'
+    );
+    if (checksumKey) {
+      checksum = body[checksumKey];
+      checksumFieldName = checksumKey;
+      console.log(`[BFS-AC] Found checksum under field name: "${checksumKey}" (expected: "${BFS_AC_FIELDS.CHECKSUM}")`);
+    }
+  }
+
+  console.log(`[BFS-AC] Checksum (length ${checksum.length}): ${checksum.substring(0, 40)}...`);
+
+  // Rebuild source string from response fields (excluding checksum — case-insensitive)
   const responseFields: Record<string, string> = { ...body };
+  // Delete checksum field by the exact key we found
+  delete responseFields[checksumFieldName];
+  // Also try deleting by the constant name in case both exist
   delete responseFields[BFS_AC_FIELDS.CHECKSUM];
+  // Also try case-insensitive deletion
+  Object.keys(responseFields).forEach((k) => {
+    if (k.toLowerCase() === 'bfs_checksum') {
+      delete responseFields[k];
+    }
+  });
 
   const sourceString = buildSourceString(responseFields);
+  console.log(`[BFS-AC] Verification source string: ${sourceString}`);
+  console.log(`[BFS-AC] Calling verifyResponse...`);
+
   const isValid = verifyResponse(sourceString, checksum);
+  console.log(`[BFS-AC] Verification result: ${isValid}`);
 
   const authResult = resolveAuthCode(debitAuthCode);
   
