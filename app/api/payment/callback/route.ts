@@ -41,14 +41,27 @@ export async function POST(req: NextRequest) {
 
     console.log('[BFS] AC callback received:', JSON.stringify(body));
 
+    // ── Helper to resolve the correct Base URL ────────────────────
+    function getBaseUrl(): string {
+      let envUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
+      if (envUrl && !envUrl.includes('0.0.0.0')) {
+        return envUrl;
+      }
+      const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      if (host) {
+        return `${proto}://${host}`;
+      }
+      return new URL(req.url).origin;
+    }
+    const baseUrl = getBaseUrl();
+
     // ── 2. Parse and validate AC response ─────────────────────────
     const acData = parseACResponse(body);
 
     if (!acData.orderNo) {
       console.error('[BFS] AC callback missing orderNo');
-      return NextResponse.redirect(
-        new URL('/payment/failure?reason=missing_order', req.url)
-      );
+      return NextResponse.redirect(`${baseUrl}/payment/failure?reason=missing_order`);
     }
 
     // ── 3. Find BFS Transaction ───────────────────────────────────
@@ -56,9 +69,7 @@ export async function POST(req: NextRequest) {
 
     if (!bfsTxn) {
       console.error(`[BFS] No transaction found for orderNo: ${acData.orderNo}`);
-      return NextResponse.redirect(
-        new URL('/payment/failure?reason=txn_not_found', req.url)
-      );
+      return NextResponse.redirect(`${baseUrl}/payment/failure?reason=txn_not_found`);
     }
 
     // ── 4. Verify checksum ────────────────────────────────────────
@@ -69,9 +80,7 @@ export async function POST(req: NextRequest) {
       bfsTxn.acPayload = body;
       await bfsTxn.save();
 
-      return NextResponse.redirect(
-        new URL('/payment/failure?reason=checksum_invalid', req.url)
-      );
+      return NextResponse.redirect(`${baseUrl}/payment/failure?reason=checksum_invalid`);
     }
 
     // ── 5. Validate amount matches ────────────────────────────────
@@ -85,9 +94,7 @@ export async function POST(req: NextRequest) {
       bfsTxn.acPayload = body;
       await bfsTxn.save();
 
-      return NextResponse.redirect(
-        new URL('/payment/failure?reason=amount_mismatch', req.url)
-      );
+      return NextResponse.redirect(`${baseUrl}/payment/failure?reason=amount_mismatch`);
     }
 
     // ── 6. Update BFS Transaction ─────────────────────────────────
@@ -119,8 +126,6 @@ export async function POST(req: NextRequest) {
     );
 
     // ── 8. Redirect user to appropriate page ──────────────────────
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || new URL(req.url).origin;
-
     switch (acData.status) {
       case 'SUCCESS':
         return NextResponse.redirect(
@@ -138,8 +143,11 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     const err = error as Error;
     console.error('[BFS] Callback processing error:', err);
+    // Best effort redirect if baseUrl isn't defined yet
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'ourstore.tech';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
     return NextResponse.redirect(
-      new URL('/payment/failure?reason=server_error', req.url)
+      `${proto}://${host}/payment/failure?reason=server_error`
     );
   }
 }
