@@ -16,7 +16,7 @@ import { BFS_PRIVATE_KEY_PATH, BFS_PUBLIC_KEY_PATH } from './constants';
 
 // ── Cached keys (loaded once per process) ───────────────────────────
 let _privateKeyObj: crypto.KeyObject | null = null;
-let _publicKey: string | null = null;
+
 
 /**
  * Extract raw base64 from a PEM string (or env-var mangled PEM),
@@ -121,41 +121,58 @@ export function getPrivateKeyObject(): crypto.KeyObject {
   return _privateKeyObj;
 }
 
+// ── Cached public key ───────────────────────────────────────────────
+let _publicKeyObj: crypto.KeyObject | null = null;
+
 /**
- * Normalize a PEM public key string for verification.
+ * Load the public key as a crypto.KeyObject using DER format.
+ * Same DER bypass approach as the private key to avoid OpenSSL 3.0 PEM issues.
  */
-function normalizePublicKey(key: string): string {
-  let s = key.trim().replace(/^"|"$/g, '').trim();
-  s = s.replace(/\\n/g, '\n').replace(/\\r/g, '');
-  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '');
-  s = s.replace(/[^\x20-\x7E\n]/g, '');
+export function getPublicKeyObject(): crypto.KeyObject {
+  if (!_publicKeyObj) {
+    const rawKey = process.env.BFS_PUBLIC_KEY || joinSplitKeyRaw('BFS_PUBLIC_KEY');
 
-  const headerMatch = s.match(/-----BEGIN [A-Z ]+-----/);
-  const footerMatch = s.match(/-----END [A-Z ]+-----/);
-  if (headerMatch && footerMatch) {
-    const header = headerMatch[0];
-    const footer = footerMatch[0];
-    const base64Part = s.substring(
-      s.indexOf(header) + header.length,
-      s.indexOf(footer)
-    );
-    const cleanBase64 = base64Part.replace(/\s+/g, '');
-    const lines = cleanBase64.match(/.{1,64}/g) || [];
-    s = `${header}\n${lines.join('\n')}\n${footer}\n`;
-  }
-  return s;
-}
+    if (rawKey && rawKey.includes('BEGIN')) {
+      const base64 = extractBase64FromPEM(rawKey);
+      console.log(`[BFS] Public key base64 extracted, length: ${base64.length}`);
 
-export function getPublicKey(): string {
-  if (!_publicKey) {
-    const directKey = process.env.BFS_PUBLIC_KEY || joinSplitKeyRaw('BFS_PUBLIC_KEY');
+      const derBuffer = Buffer.from(base64, 'base64');
+      console.log(`[BFS] Public key DER buffer length: ${derBuffer.length} bytes`);
 
-    if (directKey && directKey.includes('-----BEGIN')) {
-      _publicKey = normalizePublicKey(directKey);
-      console.log('[BFS] Loaded public key from environment variable');
-      return _publicKey;
+      const isRSA = rawKey.includes('RSA PUBLIC KEY');
+      const keyType = isRSA ? 'pkcs1' : 'spki';
+      console.log(`[BFS] Public key type: ${keyType}`);
+
+      try {
+        _publicKeyObj = crypto.createPublicKey({
+          key: derBuffer,
+          format: 'der',
+          type: keyType,
+        });
+        console.log('[BFS] ✅ Public key loaded successfully via DER format');
+      } catch (derErr) {
+        console.error('[BFS] DER public key load failed, trying alternate type...', (derErr as Error).message);
+        const altType = isRSA ? 'spki' : 'pkcs1';
+        try {
+          _publicKeyObj = crypto.createPublicKey({
+            key: derBuffer,
+            format: 'der',
+            type: altType,
+          });
+          console.log(`[BFS] ✅ Public key loaded successfully via DER format (${altType})`);
+        } catch (altErr) {
+          console.error('[BFS] Both DER formats failed. Trying reconstructed PEM...');
+          const lines = base64.match(/.{1,64}/g) || [];
+          const header = isRSA ? 'RSA PUBLIC KEY' : 'PUBLIC KEY';
+          const cleanPem = `-----BEGIN ${header}-----\n${lines.join('\n')}\n-----END ${header}-----\n`;
+          _publicKeyObj = crypto.createPublicKey(cleanPem);
+          console.log('[BFS] ✅ Public key loaded via reconstructed PEM');
+        }
+      }
+      return _publicKeyObj;
     }
 
+    // Fallback to file
     const keyPath = path.resolve(process.cwd(), BFS_PUBLIC_KEY_PATH);
     if (!fs.existsSync(keyPath)) {
       throw new Error(
@@ -163,10 +180,17 @@ export function getPublicKey(): string {
         'Obtain the BFS Secure public key from RMA or set the keys correctly.'
       );
     }
-    _publicKey = fs.readFileSync(keyPath, 'utf-8');
+    const fileContent = fs.readFileSync(keyPath, 'utf-8');
+    _publicKeyObj = crypto.createPublicKey(fileContent);
     console.log('[BFS] Loaded public key from file:', keyPath);
   }
-  return _publicKey;
+  return _publicKeyObj;
+}
+
+// Keep backward compat for any code that calls getPublicKey() and expects a string
+export function getPublicKey(): string {
+  const keyObj = getPublicKeyObject();
+  return keyObj.export({ type: 'spki', format: 'pem' }) as string;
 }
 
 /**
@@ -194,11 +218,6 @@ export function buildSourceString(fields: Record<string, string>): string {
 
 /**
  * PKCS#1 v1.5 DigestInfo header for SHA-1.
- * This is the DER-encoded AlgorithmIdentifier for SHA-1:
- *   SEQUENCE { SEQUENCE { OID 1.3.14.3.2.26, NULL }, OCTET STRING (20 bytes) }
- *
- * OpenSSL 3.0 disables SHA1 in createSign/createVerify ("invalid digest").
- * We bypass this by manually hashing + using privateEncrypt/publicDecrypt.
  */
 const SHA1_DIGEST_INFO_PREFIX = Buffer.from(
   '3021300906052b0e03021a05000414',
@@ -236,7 +255,7 @@ export function signRequest(sourceString: string): string {
       const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
       const digestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
 
-      // Export as PEM for privateEncrypt (it doesn't accept KeyObject directly)
+      // Export as PEM for privateEncrypt
       const privateKeyPem = keyObj.export({ type: 'pkcs1', format: 'pem' });
 
       const signature = crypto.privateEncrypt(
@@ -268,39 +287,50 @@ export function verifyResponse(sourceString: string, checksumHex: string): boole
   console.log(`[BFS-VERIFY] Attempting verification, checksum length: ${checksumHex.length}`);
 
   try {
-    const publicKey = getPublicKey();
-    console.log(`[BFS-VERIFY] Public key loaded, length: ${publicKey.length}`);
+    const keyObj = getPublicKeyObject();
+    console.log('[BFS-VERIFY] Public KeyObject loaded successfully');
 
-    // Primary: Use crypto.verify()
+    // Primary: Use crypto.verify() with KeyObject
     try {
       const isValid = crypto.verify(
         'sha1',
         Buffer.from(sourceString, 'utf8'),
-        { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        { key: keyObj, padding: crypto.constants.RSA_PKCS1_PADDING },
         Buffer.from(checksumHex, 'hex')
       );
       console.log(`[BFS-VERIFY] crypto.verify() returned: ${isValid}`);
       return isValid;
     } catch (verifyErr) {
       console.log('[BFS-VERIFY] crypto.verify() failed:', (verifyErr as Error).message);
+    }
 
-      // Fallback: Manual PKCS#1 v1.5 verification
+    // Fallback: Manual PKCS#1 v1.5 verification via publicDecrypt
+    try {
       console.log('[BFS-VERIFY] Trying manual publicDecrypt verification...');
-      try {
-        const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
-        const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
-        const signatureBuffer = Buffer.from(checksumHex, 'hex');
-        const decrypted = crypto.publicDecrypt(
-          { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-          signatureBuffer
-        );
-        const isValid = decrypted.equals(expectedDigestInfo);
-        console.log(`[BFS-VERIFY] Manual verification result: ${isValid}`);
-        return isValid;
-      } catch (manualErr) {
-        console.error('[BFS-VERIFY] Manual publicDecrypt also failed:', (manualErr as Error).message);
-        return false;
+      const sha1Hash = crypto.createHash('sha1').update(sourceString).digest();
+      const expectedDigestInfo = Buffer.concat([SHA1_DIGEST_INFO_PREFIX, sha1Hash]);
+      const signatureBuffer = Buffer.from(checksumHex, 'hex');
+
+      // Export public key as PEM for publicDecrypt
+      const publicKeyPem = keyObj.export({ type: 'spki', format: 'pem' }) as string;
+
+      const decrypted = crypto.publicDecrypt(
+        { key: publicKeyPem, padding: crypto.constants.RSA_PKCS1_PADDING },
+        signatureBuffer
+      );
+
+      const isValid = decrypted.equals(expectedDigestInfo);
+      if (isValid) {
+        console.log('[BFS-VERIFY] ✅ Manual verification successful');
+      } else {
+        console.log('[BFS-VERIFY] ❌ Manual verification failed - digest mismatch');
+        console.log('[BFS-VERIFY] Expected:', expectedDigestInfo.toString('hex'));
+        console.log('[BFS-VERIFY] Got:     ', decrypted.toString('hex'));
       }
+      return isValid;
+    } catch (manualErr) {
+      console.error('[BFS-VERIFY] Manual publicDecrypt also failed:', (manualErr as Error).message);
+      return false;
     }
   } catch (err) {
     console.error('[BFS-VERIFY] Checksum verification failed entirely:', err);
