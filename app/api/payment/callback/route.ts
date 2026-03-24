@@ -40,6 +40,17 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('[BFS] AC callback received:', JSON.stringify(body));
+    console.log('[BFS-AC-DEBUG] Raw field names:', Object.keys(body));
+    console.log('[BFS-AC-DEBUG] Field count:', Object.keys(body).length);
+    
+    // Log each field (mask sensitive data)
+    Object.entries(body).forEach(([key, value]) => {
+      if (key.toLowerCase().includes('checksum')) {
+        console.log(`[BFS-AC-DEBUG] ${key}: ${value.substring(0, 40)}... (length: ${value.length})`);
+      } else {
+        console.log(`[BFS-AC-DEBUG] ${key}: ${value}`);
+      }
+    });
 
     // ── Helper to resolve the correct Base URL ────────────────────
     // BFS callback is a server-to-server POST — no browser headers.

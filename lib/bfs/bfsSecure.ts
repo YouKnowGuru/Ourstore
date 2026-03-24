@@ -124,17 +124,42 @@ export function parseACResponse(body: Record<string, string>): ACResponseData {
   });
   console.log('[BFS-AC] === End Raw Fields ===');
 
-  const msgType = body[BFS_AC_FIELDS.MSG_TYPE] || '';
-  const orderNo = body[BFS_AC_FIELDS.ORDER_NO] || '';
-  const benfId = body[BFS_AC_FIELDS.BENF_ID] || '';
-  const benfTxnTime = body[BFS_AC_FIELDS.BENF_TXN_TIME] || '';
-  const txnCurrency = body[BFS_AC_FIELDS.TXN_CURRENCY] || '';
-  const txnAmount = body[BFS_AC_FIELDS.TXN_AMOUNT] || '';
-  const remitterName = body[BFS_AC_FIELDS.REMITTER_NAME] || '';
-  const remitterBankId = body[BFS_AC_FIELDS.REMITTER_BANK_ID] || '';
-  const debitAuthCode = body[BFS_AC_FIELDS.DEBIT_AUTH_CODE] || '';
-  const debitAuthNo = body[BFS_AC_FIELDS.DEBIT_AUTH_NO] || '';
-  const txnId = body[BFS_AC_FIELDS.TXN_ID] || '';
+  // Helper to get field with fallbacks
+  const getField = (primary: string, ...alternatives: string[]): string => {
+    if (body[primary]) return body[primary];
+    for (const alt of alternatives) {
+      if (body[alt]) return body[alt];
+    }
+    return '';
+  };
+
+  const msgType = getField(BFS_AC_FIELDS.MSG_TYPE);
+  const orderNo = getField(BFS_AC_FIELDS.ORDER_NO);
+  const benfId = getField(BFS_AC_FIELDS.BENF_ID);
+  const benfTxnTime = getField(BFS_AC_FIELDS.BENF_TXN_TIME, 'bfs_bfsTxnTime');
+  const txnCurrency = getField(BFS_AC_FIELDS.TXN_CURRENCY);
+  const txnAmount = getField(BFS_AC_FIELDS.TXN_AMOUNT);
+  const remitterName = getField(BFS_AC_FIELDS.REMITTER_NAME);
+  const remitterBankId = getField(BFS_AC_FIELDS.REMITTER_BANK_ID);
+  
+  // Try to get debit auth code, fallback to credit auth code
+  let debitAuthCode = getField(BFS_AC_FIELDS.DEBIT_AUTH_CODE);
+  const creditAuthCode = body['bfs_creditAuthCode'] || '';
+  
+  // If we have credit auth code but no debit auth code, use credit auth code
+  if (!debitAuthCode && creditAuthCode) {
+    debitAuthCode = creditAuthCode;
+    console.log(`[BFS-AC] Using creditAuthCode (${creditAuthCode}) as debitAuthCode`);
+  }
+  
+  const debitAuthNo = getField(BFS_AC_FIELDS.DEBIT_AUTH_NO);
+  const txnId = getField(BFS_AC_FIELDS.TXN_ID, 'bfs_bfsTxnId');
+  
+  // Log which fields we found
+  console.log(`[BFS-AC] Field mapping:`);
+  console.log(`  - txnId: ${txnId} (from ${body[BFS_AC_FIELDS.TXN_ID] ? BFS_AC_FIELDS.TXN_ID : body['bfs_bfsTxnId'] ? 'bfs_bfsTxnId' : 'not found'})`);
+  console.log(`  - debitAuthCode: ${debitAuthCode} (from ${body[BFS_AC_FIELDS.DEBIT_AUTH_CODE] ? BFS_AC_FIELDS.DEBIT_AUTH_CODE : body['bfs_creditAuthCode'] ? 'bfs_creditAuthCode' : 'not found'})`);
+  console.log(`  - benfTxnTime: ${benfTxnTime} (from ${body[BFS_AC_FIELDS.BENF_TXN_TIME] ? BFS_AC_FIELDS.BENF_TXN_TIME : body['bfs_bfsTxnTime'] ? 'bfs_bfsTxnTime' : 'not found'})`);
 
   // Case-insensitive checksum extraction — BFS may send bfs_checkSum or bfs_checksum
   let checksum = body[BFS_AC_FIELDS.CHECKSUM] || '';

@@ -66,7 +66,9 @@ export const DEFAULT_CURRENCY = 'BTN';
 
 // ── Debit Auth Code Response Map ────────────────────────────────────
 export const DEBIT_AUTH_CODES: Record<string, { status: 'SUCCESS' | 'FAILED' | 'PENDING'; message: string }> = {
+  '00': { status: 'SUCCESS', message: 'Transaction approved' },
   '0000': { status: 'SUCCESS', message: 'Transaction approved' },
+  '06': { status: 'SUCCESS', message: 'Credit transaction approved' },
   '0001': { status: 'PENDING', message: 'Transaction pending' },
   '1001': { status: 'FAILED', message: 'Transaction declined by bank' },
   '1002': { status: 'FAILED', message: 'Insufficient funds' },

@@ -188,9 +188,42 @@ export function getPublicKey(): string {
 
 /**
  * Build the BFS source string from a set of fields.
- * Fields are sorted alphabetically by name, values joined with "|".
+ * For AR and AS messages, BFS requires a specific FIXED field order.
+ * For AC (callbacks), we use alphabetical order of provided keys.
  */
 export function buildSourceString(fields: Record<string, string>): string {
+  const msgType = fields['bfs_msgType'] || '';
+
+  if (msgType === 'AR') {
+    // FIXED ORDER for AR per BFS Documentation - alphabetical by field name
+    const AR_ORDER = [
+      'bfs_benfBankCode',
+      'bfs_benfId',
+      'bfs_benfTxnTime',
+      'bfs_msgType',
+      'bfs_orderNo',
+      'bfs_paymentDesc',
+      'bfs_remitterEmail',
+      'bfs_txnAmount',
+      'bfs_txnCurrency',
+      'bfs_version',
+    ];
+    const values = AR_ORDER.map((k) => fields[k] || '');
+    const sourceString = values.join('|');
+    console.log('[BFS-DEBUG] AR Source String (Fixed Order):', sourceString);
+    return sourceString;
+  }
+
+  if (msgType === 'AS') {
+    // FIXED ORDER for AS (Status Query)
+    const AS_ORDER = ['bfs_msgType', 'bfs_orderNo', 'bfs_benfId', 'bfs_version'];
+    const values = AS_ORDER.map((k) => fields[k] || '');
+    const sourceString = values.join('|');
+    console.log('[BFS-DEBUG] AS Source String (Fixed Order):', sourceString);
+    return sourceString;
+  }
+
+  // Fallback to alphabetical for AC and unknown types
   const keys = Object.keys(fields).filter(
     (k) => k.toLowerCase() !== 'bfs_checksum' && fields[k] !== undefined
   );
@@ -198,9 +231,7 @@ export function buildSourceString(fields: Record<string, string>): string {
   const values = keys.map((k) => fields[k] || '');
   const sourceString = values.join('|');
 
-  console.log('[BFS-DEBUG] Source string keys:', keys);
-  console.log('[BFS-DEBUG] Source string values:', values);
-  console.log('[BFS-DEBUG] Source string:', sourceString);
+  console.log(`[BFS-DEBUG] ${msgType} Source String (Alphabetical):`, sourceString);
   return sourceString;
 }
 
