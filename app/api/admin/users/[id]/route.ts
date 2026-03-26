@@ -25,6 +25,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
         return NextResponse.json(user);
+} catch (error: any) {
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+}
+
+// DELETE /api/admin/users/[id] - delete user
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        await connectDB();
+        const admin = await getAdminUser(req);
+        if (!admin) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+
+        const { id } = await params;
+        const user = await User.findByIdAndDelete(id);
+        if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 });
+
+        return NextResponse.json({ message: 'User deleted successfully' });
     } catch (error: any) {
         return NextResponse.json({ message: error.message }, { status: 500 });
     }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Ban, CheckCircle, Eye } from 'lucide-react';
+import { Search, Ban, CheckCircle, Eye, Trash2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { adminAPI } from '@/lib/services/api';
 import { formatDate } from '@/lib/helpers';
@@ -11,6 +11,7 @@ const AdminUsers = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedUser, setSelectedUser] = useState<any>(null);
 
     useEffect(() => {
         fetchUsers();
@@ -34,6 +35,19 @@ const AdminUsers = () => {
             fetchUsers();
         } catch (error) {
             toast.error('Failed to update user status');
+        }
+    };
+
+    const deleteUser = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            return;
+        }
+        try {
+            await adminAPI.deleteUser(id);
+            toast.success('User deleted successfully');
+            fetchUsers();
+        } catch (error) {
+            toast.error('Failed to delete user');
         }
     };
 
@@ -102,7 +116,11 @@ const AdminUsers = () => {
                                 </td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2">
-                                        <button className="p-2 hover:bg-gray-100 rounded">
+                                        <button 
+                                            className="p-2 hover:bg-gray-100 rounded"
+                                            onClick={() => setSelectedUser(user)}
+                                            title="View Details"
+                                        >
                                             <Eye className="w-4 h-4" />
                                         </button>
                                         <button
@@ -112,6 +130,13 @@ const AdminUsers = () => {
                                         >
                                             {user.isActive ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                                         </button>
+                                        <button
+                                            className="p-2 rounded hover:bg-red-50 text-red-500"
+                                            onClick={() => deleteUser(user._id)}
+                                            title="Delete User"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -119,6 +144,56 @@ const AdminUsers = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* User Details Modal */}
+            {selectedUser && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 border-b flex items-center justify-between">
+                            <h3 className="font-display font-bold text-lg">User Details</h3>
+                            <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="flex items-center gap-4 border-b pb-4">
+                                <div className="w-16 h-16 rounded-full bg-maroon flex items-center justify-center text-2xl text-white font-medium">
+                                    {selectedUser.fullName.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-lg">{selectedUser.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-gray-500 mb-1">Phone</p>
+                                    <p className="font-medium">{selectedUser.phone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500 mb-1">Status</p>
+                                    <span className={`px-2 py-1 rounded text-xs ${selectedUser.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {selectedUser.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500 mb-1">Role</p>
+                                    <p className="font-medium capitalize">{selectedUser.role || 'user'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500 mb-1">Joined</p>
+                                    <p className="font-medium">{formatDate(selectedUser.createdAt)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 bg-gray-50 flex justify-end">
+                            <button onClick={() => setSelectedUser(null)} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
