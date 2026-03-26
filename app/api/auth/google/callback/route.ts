@@ -60,8 +60,12 @@ export async function GET(req: NextRequest) {
         // 4. Generate our JWT tokens
         const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-        // Save refresh token to user
-        user.refreshToken = refreshToken;
+        // Support multiple sessions (limit to 10)
+        if (!user.refreshTokens) user.refreshTokens = [];
+        user.refreshTokens.push(refreshToken);
+        if (user.refreshTokens.length > 10) {
+            user.refreshTokens.shift();
+        }
         await user.save();
 
         // 5. Redirect to frontend callback page with tokens

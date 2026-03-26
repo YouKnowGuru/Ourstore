@@ -179,6 +179,24 @@ const AdminDashboard = () => {
             color: 'bg-purple-500',
             lightColor: 'bg-purple-50 text-purple-600',
         },
+        {
+            title: 'Wallet Balance',
+            value: formatPrice(stats?.totalWalletBalance || 0),
+            icon: DollarSign,
+            trend: 'Liability',
+            trendUp: false,
+            color: 'bg-amber-500',
+            lightColor: 'bg-amber-50 text-amber-600',
+        },
+        {
+            title: 'Reward Points',
+            value: (stats?.totalPoints || 0).toLocaleString(),
+            icon: Activity,
+            trend: 'Circulation',
+            trendUp: true,
+            color: 'bg-pink-500',
+            lightColor: 'bg-pink-50 text-pink-600',
+        },
     ];
 
     return (
@@ -236,7 +254,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                 {statCards.map((stat) => (
                     <Card key={stat.title} className="border-none shadow-sm hover:shadow-xl transition-all duration-500 rounded-[2.5rem] group overflow-hidden bg-white">
                         <CardContent className="p-8">

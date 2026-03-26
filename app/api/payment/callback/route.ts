@@ -135,8 +135,23 @@ export async function POST(req: NextRequest) {
     const order = await Order.findById(bfsTxn.orderId);
     if (order) {
       if (acData.status === 'SUCCESS') {
+        const wasCompleted = order.paymentStatus === 'Completed';
+        
         order.paymentStatus = 'Completed';
         order.orderStatus = 'Processing';
+
+        if (!wasCompleted && order.userId) {
+            // Award points for successful online purchase
+            fetch(`${baseUrl}/api/points/earn`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    userId: order.userId.toString(), 
+                    action: 'purchase', 
+                    orderTotal: bfsTxn.amount 
+                }),
+            }).catch(e => console.error('[BFS] Failed to award points:', e));
+        }
       } else if (acData.status === 'FAILED') {
         order.paymentStatus = 'Failed';
       }

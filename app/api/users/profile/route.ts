@@ -19,6 +19,13 @@ export async function GET(req: NextRequest) {
         if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
         const fullUser = await User.findById(user._id).select('-password -otp -otpExpiry -refreshToken');
+        
+        // Lazy-initialize referral code for existing users
+        if (fullUser && !fullUser.referralCode) {
+            fullUser.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            await fullUser.save();
+        }
+
         return NextResponse.json(fullUser);
     } catch (error: unknown) {
         const err = error as Error;
@@ -40,7 +47,14 @@ export async function PATCH(req: NextRequest) {
 
         return NextResponse.json({
             message: 'Profile updated successfully',
-            user: { id: user._id, fullName: user.fullName, email: user.email, phone: user.phone, profilePicture: user.profilePicture },
+            user: { 
+                id: user._id, 
+                fullName: user.fullName, 
+                email: user.email, 
+                phone: user.phone, 
+                profilePicture: user.profilePicture,
+                referralCode: user.referralCode
+            },
         });
     } catch (error: unknown) {
         const err = error as Error;

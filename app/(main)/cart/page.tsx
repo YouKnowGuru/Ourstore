@@ -12,9 +12,9 @@ const Cart = () => {
     const router = useRouter(); // Updated hook
     const { items, total, removeFromCart, updateItemQuantity, emptyCart } = useCart();
 
-    const shippingFee = total > 5000 ? 0 : 150;
-    const tax = Math.round(total * 0.05 * 100) / 100;
-    const grandTotal = total + shippingFee + tax;
+    const shippingFee = total > 1000 ? 0 : 150;
+    const tax = 0;
+    const grandTotal = total + shippingFee;
 
     if (items.length === 0) {
         return (
@@ -226,13 +226,9 @@ const Cart = () => {
                                 </div>
                                 {shippingFee > 0 && (
                                     <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded-lg">
-                                        Add {formatPrice(5000 - total)} more for free shipping
+                                        Add {formatPrice(1000 - total)} more for free shipping
                                     </div>
                                 )}
-                                <div className="flex justify-between items-center text-muted-foreground">
-                                    <span>Tax (5%)</span>
-                                    <span className="font-medium text-gray-900">{formatPrice(tax)}</span>
-                                </div>
                             </div>
 
                             <div className="relative mb-8">

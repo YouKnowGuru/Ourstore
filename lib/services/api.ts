@@ -71,6 +71,8 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
   refreshToken: (refreshToken: string) =>
     api.post('/auth/refresh', { refreshToken }),
+  logout: (refreshToken: string) =>
+    api.post('/auth/logout', { refreshToken }),
 };
 
 // User API

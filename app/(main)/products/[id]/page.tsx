@@ -104,6 +104,7 @@ export default function ProductDetailPage() {
             productId: currentProduct._id,
             title: currentProduct.title,
             price: currentProduct.discountPrice || currentProduct.price,
+            originalPrice: currentProduct.price,
             quantity,
             image: currentProduct.images[0],
             customization: currentProduct.isCustomizable ? customization : undefined,
@@ -143,8 +144,11 @@ export default function ProductDetailPage() {
     };
 
     return (
-        <div className="pt-20 md:pt-24 pb-16 w-full overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-16 w-full overflow-x-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-50/50 via-white to-pink-50/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-2 sm:mt-4 relative">
+                {/* Decorative Background Elements */}
+                <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-cyan-100/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute top-1/2 left-0 -z-10 w-72 h-72 bg-pink-100/20 blur-3xl rounded-full -translate-x-1/2" />
 
                 {/* Breadcrumb */}
                 <nav className="text-sm mb-4 sm:mb-6 overflow-x-auto scrollbar-hide">
@@ -157,11 +161,11 @@ export default function ProductDetailPage() {
                     </ol>
                 </nav>
 
-                {/* Main Product Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                {/* Main Product Grid - Sticky Layout */}
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start relative mt-4 sm:mt-6">
 
-                    {/* Image Gallery */}
-                    <div className="space-y-3">
+                    {/* Sticky Image Gallery */}
+                    <div className="w-full lg:w-[45%] lg:sticky lg:top-28 space-y-4">
                         <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden">
                             {currentProduct.images[selectedImage] ? (
                                 <img
@@ -229,8 +233,8 @@ export default function ProductDetailPage() {
                         )}
                     </div>
 
-                    {/* Product Info */}
-                    <div className="space-y-5 min-w-0">
+                    {/* Product Information & Actions */}
+                    <div className="w-full lg:flex-1 space-y-6 sm:space-y-8 min-w-0">
 
                         {/* Title & Rating */}
                         <div>
@@ -267,13 +271,36 @@ export default function ProductDetailPage() {
                             )}
                         </div>
 
-                        {/* Description */}
-                        <div className="space-y-2">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Product Description</h3>
+                        {/* Description Summary */}
+                        <div className="space-y-3">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-600/80 mb-1">Introduction</h3>
                             <div
-                                className="prose prose-sm max-w-none text-gray-600 text-left break-words"
+                                className="text-gray-600 leading-relaxed text-sm sm:text-base line-clamp-4"
                                 dangerouslySetInnerHTML={{ __html: currentProduct.description }}
                             />
+                            <button className="text-pink-600 font-bold text-xs uppercase hover:underline" onClick={() => {
+                                const el = document.getElementById('product-description');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}>
+                                Read full story
+                            </button>
+                        </div>
+
+                        {/* Feature Bento Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {[
+                                { label: 'Category', value: currentProduct.category, icon: Sparkles, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+                                { label: 'Stock', value: currentProduct.stock > 0 ? 'Available' : 'Out of Stock', icon: MessageSquare, color: 'text-pink-600', bg: 'bg-pink-50' },
+                                { label: 'Rating', value: `${currentProduct.ratings.average} / 5`, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
+                            ].map((feature) => (
+                                <div key={feature.label} className={`${feature.bg} p-3 sm:p-4 rounded-2xl border border-white/50 shadow-sm transition-transform hover:scale-105 duration-300`}>
+                                    <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                                        <feature.icon className={`w-3 h-3 sm:w-4 sm:h-4 ${feature.color}`} />
+                                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-tight text-gray-400">{feature.label}</span>
+                                    </div>
+                                    <p className="font-bold text-xs sm:text-sm text-gray-800 capitalize leading-tight">{feature.value}</p>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Customization Options */}
@@ -374,57 +401,58 @@ export default function ProductDetailPage() {
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                        {/* Desktop Actions */}
+                        <div className="hidden lg:flex items-center gap-4 pt-4">
                             <Button
-                                size="lg"
-                                className="h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-sm transition-all"
+                                className="flex-1 h-14 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-colors shadow-xl shadow-gray-200"
                                 onClick={handleAddToCart}
                                 disabled={currentProduct.stock === 0}
                             >
-                                <Plus className="w-4 h-4 mr-2" />
+                                <Plus className="w-5 h-5 mr-2" />
                                 Add to Cart
                             </Button>
                             <Button
-                                size="lg"
-                                className="h-12 bg-saffron hover:bg-saffron/90 text-white rounded-xl font-bold text-sm transition-all border-none"
+                                className="flex-1 h-14 bg-saffron text-white rounded-2xl font-bold hover:bg-saffron-600 transition-colors shadow-xl shadow-saffron/20"
                                 onClick={handleBuyNow}
                                 disabled={currentProduct.stock === 0}
                             >
-                                Buy Now
-                                <ChevronRight className="w-4 h-4 ml-2" />
+                                Buy It Now
                             </Button>
-                        </div>
-
-                        {/* Wishlist & Share */}
-                        <div className="flex flex-wrap items-center justify-between py-3 border-y border-gray-100 gap-3">
                             <button
-                                onClick={() => currentProduct && toggleWishlist(currentProduct)}
-                                className={`flex items-center gap-2 text-sm font-bold transition-colors ${isFavorited ? 'text-maroon' : 'text-gray-400 hover:text-maroon'}`}
+                                onClick={() => toggleWishlist(currentProduct)}
+                                className={`w-14 h-14 flex items-center justify-center rounded-2xl border-2 transition-all ${isFavorited ? 'border-pink-500 bg-pink-50 text-pink-500' : 'border-gray-200 bg-white text-gray-400 hover:border-gray-300'}`}
                             >
-                                <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
-                                {isFavorited ? 'Saved' : 'Add to Wishlist'}
-                            </button>
-                            <button className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors">
-                                <Share2 className="w-4 h-4" />
-                                Share
+                                <Heart className={`w-6 h-6 ${isFavorited ? 'fill-current' : ''}`} />
                             </button>
                         </div>
 
-                        {/* Feature Icons */}
-                        <div className="grid grid-cols-3 gap-3 pt-2">
-                            {[
-                                { Icon: Truck, label: 'Free Delivery', color: 'text-saffron', bg: 'bg-amber-50' },
-                                { Icon: Shield, label: 'Safe Payment', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                                { Icon: RefreshCw, label: '7 Day Return', color: 'text-blue-600', bg: 'bg-blue-50' },
-                            ].map(({ Icon, label, color, bg }) => (
-                                <div key={label} className="text-center space-y-1.5">
-                                    <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mx-auto`}>
-                                        <Icon className={`w-5 h-5 ${color}`} />
-                                    </div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400 leading-tight">{label}</p>
+                        {/* Mobile Floating Action Bar */}
+                        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 shadow-2xl safe-area-inset-bottom">
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 flex gap-2">
+                                    <Button
+                                        className="flex-1 h-12 bg-gray-900 text-white rounded-xl font-bold shadow-lg shadow-gray-200"
+                                        onClick={handleAddToCart}
+                                        disabled={currentProduct.stock === 0}
+                                    >
+                                        <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+                                        Cart
+                                    </Button>
+                                    <Button
+                                        className="flex-1 h-12 bg-saffron text-white rounded-xl font-bold shadow-lg"
+                                        onClick={handleBuyNow}
+                                        disabled={currentProduct.stock === 0}
+                                    >
+                                        Buy Now
+                                    </Button>
                                 </div>
-                            ))}
+                                <button
+                                    onClick={() => toggleWishlist(currentProduct)}
+                                    className={`w-12 h-12 flex items-center justify-center rounded-xl border transition-all ${isFavorited ? 'bg-pink-50 border-pink-100 text-pink-600' : 'bg-gray-50 border-gray-100 text-gray-400'}`}
+                                >
+                                    <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -432,8 +460,8 @@ export default function ProductDetailPage() {
                 {/* Tabs Section */}
                 <div className="mt-10 md:mt-16">
                     <Tabs defaultValue="description" className="w-full">
-                        <div className="border-b border-gray-200 mb-6">
-                            <TabsList className="bg-transparent h-auto p-0 gap-0 w-full justify-start overflow-x-auto flex scrollbar-hide snap-x snap-mandatory">
+                        <div className="border-b border-gray-100 mb-8">
+                            <TabsList className="bg-gray-100/50 p-1 gap-1 w-full sm:w-fit justify-start rounded-2xl flex overflow-x-auto scrollbar-hide">
                                 {[
                                     { value: 'description', label: 'Description' },
                                     { value: 'reviews', label: `Reviews (${reviews.length})` },
@@ -442,7 +470,7 @@ export default function ProductDetailPage() {
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
-                                        className="data-[state=active]:bg-transparent data-[state=active]:text-saffron data-[state=active]:border-b-2 data-[state=active]:border-saffron bg-transparent border-0 rounded-none px-4 md:px-6 pb-3 pt-0 text-sm font-bold text-gray-500 whitespace-nowrap transition-all flex-shrink-0"
+                                        className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm px-6 py-2.5 text-xs font-bold text-gray-500 rounded-xl transition-all"
                                     >
                                         {tab.label}
                                     </TabsTrigger>
@@ -451,11 +479,33 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Description Tab */}
-                        <TabsContent value="description" className="mt-0 outline-none">
-                            <div
-                                className="prose prose-sm md:prose-base max-w-none text-gray-700 py-4 text-left break-words"
-                                dangerouslySetInnerHTML={{ __html: currentProduct.description }}
-                            />
+                        <TabsContent value="description" className="mt-0 outline-none" id="product-description">
+                            <div className="py-8 space-y-12">
+                                <div className="max-w-3xl">
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                                        <span className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-sm">01</span>
+                                        Product Story
+                                    </h2>
+                                    <div
+                                        className="prose prose-lg max-w-none text-gray-700 leading-relaxed text-left break-words"
+                                        dangerouslySetInnerHTML={{ __html: currentProduct.description }}
+                                    />
+                                </div>
+
+                                {currentProduct.isCustomizable && (
+                                    <div className="max-w-3xl">
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                                            <span className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-sm">02</span>
+                                            Personalization Details
+                                        </h2>
+                                        <p className="text-gray-600 mb-4">This product is highly customizable. Check the options above to personalize your item with your preferred size, color, and custom text.</p>
+                                        <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 flex items-center gap-4">
+                                            <Sparkles className="w-8 h-8 text-amber-500" />
+                                            <p className="text-sm font-medium text-amber-900 font-display">Each personalized item is handcrafted ensuring the highest quality for your unique requirements.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </TabsContent>
 
                         {/* Reviews Tab */}
@@ -583,7 +633,7 @@ export default function ProductDetailPage() {
                                     </div>
                                     <ul className="space-y-2">
                                         {[
-                                            'Free delivery on orders over Nu. 5000',
+                                            'Free delivery on orders over Nu. 1000',
                                             'Standard: 3-5 business days',
                                             'Express: 24-48 hours',
                                             'Real-time tracking provided',

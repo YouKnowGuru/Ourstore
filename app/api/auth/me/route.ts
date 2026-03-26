@@ -19,11 +19,17 @@ export async function GET(req: NextRequest) {
         }
 
         const user = await User.findById(decoded.userId)
-            .select('-password -otp -otpExpiry -refreshToken')
+            .select('-password -otp -otpExpiry -refreshTokens')
             .populate('wishlist', 'title price images discountPrice');
 
         if (!user) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
+        }
+
+        // Lazy-initialize referral code for existing users
+        if (!user.referralCode) {
+            user.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            await user.save();
         }
 
         return NextResponse.json(user);

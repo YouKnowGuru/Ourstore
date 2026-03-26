@@ -13,6 +13,14 @@ export interface IAddress {
     isDefault: boolean;
 }
 
+export interface IPointHistory {
+    type: 'earn' | 'redeem';
+    points: number;
+    amount?: number;
+    reason: string;
+    createdAt: Date;
+}
+
 export interface IUser extends Document {
     fullName: string;
     email: string;
@@ -26,10 +34,15 @@ export interface IUser extends Document {
     wishlist: mongoose.Types.ObjectId[];
     otp?: string;
     otpExpiry?: Date;
-    refreshToken?: string;
+    refreshTokens: string[];
     isActive: boolean;
+    points: number;
+    walletBalance: number;
+    pointHistory: IPointHistory[];
     createdAt: Date;
     updatedAt: Date;
+    referralCode: string;
+    referredBy?: mongoose.Types.ObjectId;
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -43,6 +56,14 @@ const addressSchema = new Schema<IAddress>({
     postalCode: { type: String, required: true },
     isDefault: { type: Boolean, default: false },
 });
+
+const pointHistorySchema = new Schema<IPointHistory>({
+    type: { type: String, enum: ['earn', 'redeem'], required: true },
+    points: { type: Number, required: true },
+    amount: { type: Number },
+    reason: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+}, { _id: false });
 
 const userSchema = new Schema<IUser>(
     {
@@ -58,15 +79,26 @@ const userSchema = new Schema<IUser>(
         wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
         otp: { type: String },
         otpExpiry: { type: Date },
-        refreshToken: { type: String },
+        refreshTokens: [{ type: String }],
         isActive: { type: Boolean, default: true },
+        points: { type: Number, default: 0 },
+        walletBalance: { type: Number, default: 0 },
+        pointHistory: [pointHistorySchema],
+        referralCode: { type: String, unique: true, sparse: true },
+        referredBy: { type: Schema.Types.ObjectId, ref: 'User' },
     },
     { timestamps: true }
 );
 
-userSchema.pre('save', async function () {
-    if (!this.isModified('password') || !this.password) return;
+userSchema.pre('save', async function (next) {
+    // Generate referral code if missing
+    if (!this.referralCode) {
+        this.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    if (!this.isModified('password') || !this.password) return next();
     this.password = await bcrypt.hash(this.password, 12);
+    next();
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {

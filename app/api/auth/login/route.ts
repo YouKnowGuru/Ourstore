@@ -41,7 +41,14 @@ export async function POST(req: NextRequest) {
         }
 
         const { accessToken, refreshToken } = generateTokens(user._id.toString());
-        user.refreshToken = refreshToken;
+        
+        // Support multiple sessions (limit to 10)
+        if (!user.refreshTokens) user.refreshTokens = [];
+        user.refreshTokens.push(refreshToken);
+        if (user.refreshTokens.length > 10) {
+            user.refreshTokens.shift();
+        }
+        
         await user.save();
 
         return NextResponse.json({

@@ -81,6 +81,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         const order = await Order.findOne(query);
         if (!order) return NextResponse.json({ message: 'Order not found' }, { status: 404 });
 
+        if (user.role === 'admin') {
+            // Restore stock if it's not already cancelled, delivered or shipped
+            if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered' && order.orderStatus !== 'Shipped') {
+                for (const item of order.items) {
+                    await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity, salesCount: -item.quantity } });
+                }
+            }
+            await Order.findByIdAndDelete(id);
+            return NextResponse.json({ message: 'Order deleted permanently' });
+        }
+
         if (order.orderStatus === 'Delivered' || order.orderStatus === 'Shipped') {
             return NextResponse.json({ message: 'Cannot cancel delivered or shipped orders' }, { status: 400 });
         }

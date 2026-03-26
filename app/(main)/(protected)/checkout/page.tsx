@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, CreditCard, Truck, CheckCircle, ChevronRight, ShoppingBag } from 'lucide-react';
+import { MapPin, CreditCard, Truck, CheckCircle, ChevronRight, ShoppingBag, Wallet, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/lib/hooks/useCart';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrders } from '@/lib/hooks/useOrders';
+import { useWallet } from '@/lib/hooks/useWallet';
 import { userAPI } from '@/lib/services/api';
 import { formatPrice } from '@/lib/helpers';
 import { toast } from 'sonner';
@@ -27,10 +28,13 @@ const Checkout = () => {
     const { user, isAuthenticated } = useAuth();
     const { items, total, emptyCart } = useCart();
     const { placeOrder } = useOrders();
+    const { wallet, fetchWallet, applyWallet } = useWallet();
 
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Online'>('COD');
+    const [useWalletBalance, setUseWalletBalance] = useState(false);
+    const [walletDiscount, setWalletDiscount] = useState(0);
 
     const [shippingAddress, setShippingAddress] = useState({
         fullName: user?.fullName || '',
@@ -62,9 +66,31 @@ const Checkout = () => {
         }
     }, [user]);
 
-    const shippingFee = total > 5000 ? 0 : 150;
-    const tax = Math.round(total * 0.05 * 100) / 100;
-    const grandTotal = total + shippingFee + tax;
+    const effectiveSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const shippingFee = effectiveSubtotal > 1000 ? 0 : 150;
+    const tax = 0;
+    const grandTotal = parseFloat((effectiveSubtotal + shippingFee - walletDiscount).toFixed(2));
+
+    // Fetch wallet when authenticated
+    useEffect(() => {
+        if (isAuthenticated) fetchWallet();
+    }, [isAuthenticated, fetchWallet]);
+
+    // Apply/remove wallet discount when toggled
+    useEffect(() => {
+        const applyWalletDiscount = async () => {
+            if (!useWalletBalance || !wallet || wallet.walletBalance <= 0) {
+                setWalletDiscount(0);
+                return;
+            }
+            const cartTotal = effectiveSubtotal + shippingFee + tax;
+            const data = await applyWallet(cartTotal, wallet.walletBalance);
+            if (data) {
+                setWalletDiscount(data.applicableDiscount);
+            }
+        };
+        applyWalletDiscount();
+    }, [useWalletBalance, wallet, effectiveSubtotal, shippingFee, tax, applyWallet]);
 
     useEffect(() => {
         if (items.length === 0 && !isProcessing) {
@@ -128,6 +154,8 @@ const Checkout = () => {
                 shippingAddress,
                 paymentMethod,
                 isGuest: !user,
+                walletUsed: useWalletBalance ? walletDiscount : 0,
+                subtotal: effectiveSubtotal,
             }).unwrap();
 
             const orderId = result.order._id;
@@ -186,6 +214,16 @@ const Checkout = () => {
 
             // ── COD Flow ─────────────────────────────────────────
             console.log('[COD] Order successful, clearing cart');
+
+            // Award purchase points (fire and forget)
+            if (user?._id) {
+                fetch('/api/points/earn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user._id, action: 'purchase', orderTotal: grandTotal }),
+                }).catch(console.error);
+            }
+
             emptyCart();
             toast.success('Order placed successfully!');
             router.push(`/order-success?orderId=${orderId}`);
@@ -490,20 +528,67 @@ const Checkout = () => {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-gray-900 truncate">{item.title}</p>
-                                            <div className="flex items-center justify-between mt-1">
+                                             <div className="flex items-center justify-between mt-1">
                                                 <span className="text-xs text-gray-400 font-bold">QTY: {item.quantity}</span>
-                                                <span className="text-sm font-black text-maroon">{formatPrice(item.price * item.quantity)}</span>
+                                                <span className="text-sm font-black text-maroon">
+                                                    {formatPrice(item.price * item.quantity)}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="p-5 sm:p-8 bg-gray-50/50 space-y-4">
+                             {/* Wallet Balance Section */}
+                            {isAuthenticated && wallet && wallet.walletBalance > 0 && (
+                                <div className="px-5 sm:px-8 py-4 border-t border-dashed border-amber-100 bg-amber-50/40">
+                                    <div
+                                        className={`flex items-center justify-between gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+                                            useWalletBalance
+                                                ? 'border-amber-400 bg-amber-50 shadow-sm'
+                                                : 'border-amber-100 bg-white hover:border-amber-200'
+                                        }`}
+                                        onClick={() => setUseWalletBalance(prev => !prev)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                                                useWalletBalance ? 'bg-amber-400 text-white' : 'bg-amber-100 text-amber-600'
+                                            }`}>
+                                                <Wallet className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-sm text-gray-900">Use Wallet Balance</p>
+                                                <p className="text-xs text-amber-700 font-bold">Available: Nu. {wallet.walletBalance.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                            useWalletBalance ? 'bg-amber-400 border-amber-400' : 'border-gray-200'
+                                        }`}>
+                                            {useWalletBalance && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                                        </div>
+                                    </div>
+                                    {useWalletBalance && walletDiscount > 0 && (
+                                        <div className="mt-2 flex items-center gap-2 px-2 text-amber-700">
+                                            <Coins className="w-3.5 h-3.5" />
+                                            <p className="text-xs font-bold">- Nu. {walletDiscount.toFixed(2)} wallet discount applied</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {isAuthenticated && wallet && wallet.points > 0 && !wallet.walletBalance && (
+                                <div className="px-5 sm:px-8 py-3 border-t border-dashed border-gray-100">
+                                    <p className="text-xs text-gray-500 font-medium text-center">
+                                        💰 You have <span className="font-black text-amber-600">{wallet.points} pts</span> — <a href="/wallet" className="underline text-amber-600 hover:text-amber-700">Convert to Nu.</a>
+                                    </p>
+                                </div>
+                            )}
+
+                        <div className="p-5 sm:p-8 bg-gray-50/50 space-y-4">
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center">
+                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-bold uppercase tracking-tight text-xs">Subtotal</span>
-                                        <span className="font-bold text-gray-900">{formatPrice(total)}</span>
+                                        <span className="font-bold text-gray-900">{formatPrice(effectiveSubtotal)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-bold uppercase tracking-tight text-xs">Delivery Fee</span>
@@ -511,10 +596,13 @@ const Checkout = () => {
                                             {shippingFee === 0 ? 'COMPLIMENTARY' : formatPrice(shippingFee)}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 font-bold uppercase tracking-tight text-xs">Tax (Incl.)</span>
-                                        <span className="font-bold text-gray-900">{formatPrice(tax)}</span>
-                                    </div>
+
+                                    {walletDiscount > 0 && (
+                                        <div className="flex justify-between items-center text-amber-600">
+                                            <span className="font-bold uppercase tracking-tight text-xs">Wallet Discount</span>
+                                            <span className="font-bold">- {formatPrice(walletDiscount)}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <Separator className="bg-gray-200 h-px" />

@@ -41,6 +41,7 @@ export interface IOrder extends Document {
     subtotal: number;
     shippingFee: number;
     tax: number;
+    walletAmount: number;
     total: number;
     notes?: string;
     trackingNumber?: string;
@@ -93,6 +94,7 @@ const orderSchema = new Schema<IOrder>(
         subtotal: { type: Number, required: true },
         shippingFee: { type: Number, default: 0 },
         tax: { type: Number, default: 0 },
+        walletAmount: { type: Number, default: 0 },
         total: { type: Number, required: true },
         notes: { type: String },
         trackingNumber: { type: String },

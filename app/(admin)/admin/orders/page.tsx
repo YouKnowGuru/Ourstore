@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Fragment } from 'react';
-import { Eye, Package, Truck, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Eye, Package, Truck, CheckCircle, XCircle, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { orderAPI } from '@/lib/services/api';
 import { formatPrice, formatDate, getOrderStatusColor, getPaymentStatusColor } from '@/lib/helpers';
@@ -40,6 +40,21 @@ const AdminOrders = () => {
             fetchOrders();
         } catch (error) {
             toast.error('Failed to update status');
+        } finally {
+            setUpdatingOrderId(null);
+        }
+    };
+    const deleteOrder = async (id: string) => {
+        if (!window.confirm('Are you sure you want to permanently delete this order? This action cannot be undone.')) {
+            return;
+        }
+        setUpdatingOrderId(id);
+        try {
+            await orderAPI.cancelOrder(id); // cancelOrder calls DELETE /api/orders/[id]
+            toast.success('Order deleted permanently');
+            fetchOrders();
+        } catch (error) {
+            toast.error('Failed to delete order');
         } finally {
             setUpdatingOrderId(null);
         }
@@ -160,6 +175,15 @@ const AdminOrders = () => {
                                                     {updatingOrderId === order._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                                 </button>
                                             )}
+                                            
+                                            <button
+                                                className="p-2 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                                onClick={() => deleteOrder(order._id)}
+                                                disabled={updatingOrderId === order._id}
+                                                title="Delete Order Permanently"
+                                            >
+                                                {updatingOrderId === order._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

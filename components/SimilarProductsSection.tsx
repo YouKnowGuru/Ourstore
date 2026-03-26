@@ -2,14 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRecommendations } from '@/lib/hooks/useRecommendations';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Bookmark, ShoppingCart, RefreshCw } from 'lucide-react';
-import { useActivityTracking } from '@/lib/hooks/useRecommendations';
-import Link from 'next/link';
-import { formatPrice } from '@/lib/helpers';
+import { RefreshCw } from 'lucide-react';
+import ProductCard from '@/components/ProductCard';
+import type { Product } from '@/lib/types';
 
 interface SimilarProductsSectionProps {
   productId: string;
@@ -26,8 +24,7 @@ export function SimilarProductsSection({
   limit = 6,
   className = '',
 }: SimilarProductsSectionProps) {
-  const { recommendations, isLoading, error, refresh, fetchSimilarProducts } = useRecommendations(limit);
-  const { trackActivity } = useActivityTracking();
+  const { recommendations, isLoading, error, fetchSimilarProducts } = useRecommendations(limit);
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
@@ -36,33 +33,6 @@ export function SimilarProductsSection({
       setHasFetched(true);
     }
   }, [productId, fetchSimilarProducts, limit, hasFetched]);
-
-  const handleViewContent = (productId: string, title: string, subject: string, contentType: string) => {
-    trackActivity('view', productId, {
-      subject,
-      contentType,
-      difficulty: 'intermediate',
-    });
-    // Navigation will happen via Link component
-  };
-
-  const handleBookmark = (productId: string, title: string, subject: string) => {
-    trackActivity('bookmark', productId, {
-      subject,
-      contentType: 'course',
-    });
-    // Add to wishlist logic here
-    alert(`Added "${title}" to bookmarks`);
-  };
-
-  const handleAddToCart = (productId: string, title: string, subject: string) => {
-    trackActivity('cart', productId, {
-      subject,
-      contentType: 'course',
-    });
-    // Add to cart logic here
-    alert(`Added "${title}" to cart`);
-  };
 
   const handleRefresh = async () => {
     await fetchSimilarProducts(productId, limit);
@@ -94,7 +64,7 @@ export function SimilarProductsSection({
             Loading...
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {Array.from({ length: limit }).map((_, i) => (
             <Card key={i} className="overflow-hidden">
               <CardHeader className="p-4">
@@ -145,78 +115,28 @@ export function SimilarProductsSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recommendations.map((product) => (
-          <Card key={product.productId} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4 pb-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-base font-bold line-clamp-1">
-                    <Link 
-                      href={`/products/${product.productId}`}
-                      onClick={() => handleViewContent(product.productId, product.title, product.subject, product.contentType)}
-                      className="hover:text-primary"
-                    >
-                      {product.title}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription className="text-xs mt-1">
-                    {product.subject} • {product.contentType}
-                  </CardDescription>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {product.difficulty}
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-lg font-bold text-primary">
-                  {formatPrice(product.price)}
-                </div>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <span className="bg-primary/10 text-primary px-2 py-1 rounded">
-                    Match: {Math.round(product.score)}%
-                  </span>
-                </div>
-              </div>
-              
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                {product.reason}
-              </p>
-            </CardContent>
-            
-            <CardFooter className="p-4 pt-0 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => handleViewContent(product.productId, product.title, product.subject, product.contentType)}
-                asChild
-              >
-                <Link href={`/products/${product.productId}`}>
-                  <Eye className="w-3.5 h-3.5 mr-1.5" />
-                  View
-                </Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleBookmark(product.productId, product.title, product.subject)}
-              >
-                <Bookmark className="w-3.5 h-3.5" />
-              </Button>
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={() => handleAddToCart(product.productId, product.title, product.subject)}
-              >
-                <ShoppingCart className="w-3.5 h-3.5" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {recommendations.map((rec) => {
+            const product: Product = {
+              _id: rec.productId,
+              title: rec.title,
+              description: rec.description || rec.reason || '',
+              price: rec.price,
+              discountPrice: rec.discountPrice,
+              images: rec.images,
+              category: rec.category,
+              isFeatured: rec.isFeatured,
+              ratings: rec.ratings,
+              isCustomizable: false,
+              stock: 10,
+              tags: [rec.subject, rec.contentType, rec.difficulty],
+              status: 'active',
+              salesCount: 0,
+              createdAt: new Date().toISOString()
+            };
+
+            return <ProductCard key={rec.productId} product={product} />;
+        })}
       </div>
     </div>
   );

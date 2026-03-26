@@ -7,7 +7,7 @@ import { sendOTPEmail } from '@/lib/services/emailService';
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
-        const { fullName, email, password, phone } = await req.json();
+        const { fullName, email, password, phone, referralCode: providedReferralCode } = await req.json();
 
         if (!fullName || !email || !password) {
             return NextResponse.json({ message: 'fullName, email, and password are required' }, { status: 400 });
@@ -21,7 +21,15 @@ export async function POST(req: NextRequest) {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-        const user = await User.create({ fullName, email, password, phone, otp, otpExpiry });
+        let referredBy = undefined;
+        if (providedReferralCode) {
+            const referrer = await User.findOne({ referralCode: providedReferralCode.toUpperCase() });
+            if (referrer) {
+                referredBy = referrer._id;
+            }
+        }
+
+        const user = await User.create({ fullName, email, password, phone, otp, otpExpiry, referredBy });
 
         let emailSent = true;
         try {

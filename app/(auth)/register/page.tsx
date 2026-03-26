@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, User, Mail, Lock, Phone, UserPlus, ShieldCheck, Chrome } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, Phone, UserPlus, ShieldCheck, Chrome, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,16 @@ const Register = () => {
         phone: '',
         password: '',
         confirmPassword: '',
+        referralCode: '',
+    });
+
+    // Auto-fill referral from URL
+    useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const ref = params.get('ref');
+            if (ref) setFormData(prev => ({ ...prev, referralCode: ref }));
+        }
     });
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +54,8 @@ const Register = () => {
                 fullName: formData.fullName,
                 email: formData.email,
                 phone: formData.phone,
-                password: formData.password
+                password: formData.password,
+                referralCode: formData.referralCode
             })).unwrap();
 
             toast.success('Welcome to Our Store family!', {
@@ -175,6 +186,24 @@ const Register = () => {
                                 onChange={handleChange}
                                 className="h-16 px-14 text-center bg-gray-50/30 border-gray-100 text-gray-900 placeholder:text-gray-300 rounded-2xl focus:ring-8 focus:ring-maroon/5 focus:border-maroon/20 transition-all duration-500 font-medium text-base shadow-sm"
                                 required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Referral Code */}
+                    <div className="space-y-1.5 md:col-span-2">
+                        <Label htmlFor="referralCode" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block text-center mb-1 text-indigo-500">Referral Code (Optional)</Label>
+                        <div className="relative group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-indigo-50/50 rounded-xl flex items-center justify-center group-focus-within:bg-indigo-100 transition-all duration-300">
+                                <Gift className="w-4 h-4 text-indigo-400 group-focus-within:text-indigo-600 transition-colors" />
+                            </div>
+                            <Input
+                                id="referralCode"
+                                name="referralCode"
+                                placeholder="Have a referral code? Enter it here"
+                                value={formData.referralCode}
+                                onChange={handleChange}
+                                className="h-16 px-14 text-center bg-indigo-50/10 border-indigo-100 text-indigo-900 placeholder:text-indigo-200 rounded-2xl focus:ring-8 focus:ring-indigo-50/30 focus:border-indigo-200 transition-all duration-500 font-bold text-base shadow-sm"
                             />
                         </div>
                     </div>

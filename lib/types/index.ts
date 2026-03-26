@@ -8,6 +8,9 @@ export interface User {
   role: 'user' | 'admin';
   isVerified: boolean;
   wishlist: string[];
+  points: number;
+  walletBalance: number;
+  referralCode: string;
   createdAt: string;
 }
 
@@ -70,6 +73,7 @@ export interface CartItem {
   productId: string;
   title: string;
   price: number;
+  originalPrice: number;
   quantity: number;
   image: string;
   customization?: {

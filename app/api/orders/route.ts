@@ -8,6 +8,7 @@ import { verifyAccessToken } from '@/lib/services/tokenService';
 import { generateOrderNumber } from '@/lib/utils/helpers';
 import { sendOrderConfirmation } from '@/lib/services/emailService';
 import User from '@/lib/models/User';
+import WalletTransaction from '@/lib/models/WalletTransaction';
 
 async function getUser(req: NextRequest) {
     const authHeader = req.headers.get('authorization');
@@ -57,8 +58,8 @@ export async function POST(req: NextRequest) {
     try {
         await connectDB();
         const body = await req.json();
-        const { items, shippingAddress, paymentMethod, guestInfo, isGuest = false, notes } = body;
-        console.log('[ORDERS] Received POST body:', JSON.stringify({ items: items?.length, paymentMethod, isGuest, hasShipping: !!shippingAddress }));
+        const { items, shippingAddress, paymentMethod, guestInfo, isGuest = false, notes, walletUsed = 0 } = body;
+        console.log('[ORDERS] Received POST body:', JSON.stringify({ items: items?.length, paymentMethod, isGuest, hasShipping: !!shippingAddress, walletUsed }));
 
         let subtotal = 0;
         const orderItems = [];
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ message: `Insufficient stock for ${product.title}. Available: ${product.stock}` }, { status: 400 });
             }
 
+            // Keep using discount price if available, regardless of wallet usage
             const price = product.discountPrice || product.price;
             subtotal += price * item.quantity;
             orderItems.push({ productId: product._id, title: product.title, price, quantity: item.quantity, customization: item.customization || {}, image: product.images[0] });
@@ -80,9 +82,10 @@ export async function POST(req: NextRequest) {
             await product.save();
         }
 
-        const shippingFee = subtotal > 5000 ? 0 : 150;
-        const tax = Math.round(subtotal * 0.05 * 100) / 100;
-        const total = subtotal + shippingFee + tax;
+        const shippingFee = subtotal > 1000 ? 0 : 150;
+        const tax = 0;
+        const total = subtotal + shippingFee - walletUsed;
+        const orderNumber = generateOrderNumber();
 
         // Get user if authenticated
         let userId: string | undefined = undefined;
@@ -98,9 +101,26 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Deduct from wallet if used
+        if (walletUsed > 0 && userId) {
+            const user = await User.findById(userId);
+            if (!user || user.walletBalance < walletUsed) {
+                return NextResponse.json({ message: 'Insufficient wallet balance' }, { status: 400 });
+            }
+            user.walletBalance -= walletUsed;
+            await user.save();
+
+            await WalletTransaction.create({
+                userId,
+                type: 'debit',
+                amount: walletUsed,
+                description: `Payment for Order #${orderNumber}`
+            });
+        }
+
         const order = await Order.create({
             userId,
-            orderNumber: generateOrderNumber(),
+            orderNumber,
             items: orderItems,
             shippingAddress,
             guestInfo: isGuest ? guestInfo : null,
@@ -109,6 +129,7 @@ export async function POST(req: NextRequest) {
             subtotal,
             shippingFee,
             tax,
+            walletAmount: walletUsed,
             total,
             notes,
         });

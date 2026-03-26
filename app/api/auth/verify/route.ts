@@ -23,8 +23,30 @@ export async function POST(req: NextRequest) {
         await user.save();
 
         const { accessToken, refreshToken } = generateTokens(user._id.toString());
-        user.refreshToken = refreshToken;
+        
+        // Support multiple sessions (limit to 10)
+        if (!user.refreshTokens) user.refreshTokens = [];
+        user.refreshTokens.push(refreshToken);
+        if (user.refreshTokens.length > 10) {
+            user.refreshTokens.shift();
+        }
         await user.save();
+
+        // Award signup points (fire and forget)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/points/earn`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user._id, action: 'signup' }),
+        }).catch(console.error);
+
+        // Award referral points if applicable
+        if (user.referredBy) {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/points/earn`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user._id, action: 'referral' }),
+            }).catch(console.error);
+        }
 
         return NextResponse.json({
             message: 'Email verified successfully',
@@ -36,6 +58,7 @@ export async function POST(req: NextRequest) {
                 email: user.email,
                 role: user.role,
                 profilePicture: user.profilePicture,
+                referralCode: user.referralCode,
             },
         });
     } catch (error: unknown) {

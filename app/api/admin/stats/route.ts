@@ -89,6 +89,11 @@ export async function GET(req: NextRequest) {
             }))
         ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
 
+        // Calculate total wallet balance and points across all users
+        const userStats = await User.aggregate([
+            { $group: { _id: null, totalBalance: { $sum: '$walletBalance' }, totalPoints: { $sum: '$points' } } }
+        ]);
+
         return NextResponse.json({
             totalOrders,
             pendingOrders,
@@ -104,6 +109,8 @@ export async function GET(req: NextRequest) {
             recentActivity,
             salesHistory: monthlyRevenue, // Frontend expects salesHistory
             totalRevenue: revenue[0]?.total || 0,
+            totalWalletBalance: userStats[0]?.totalBalance || 0,
+            totalPoints: userStats[0]?.totalPoints || 0,
         });
     } catch (error: unknown) {
         const err = error as Error;

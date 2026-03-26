@@ -34,6 +34,7 @@ const ProductCard = ({ product, showWishlist = true }: ProductCardProps) => {
       productId: product._id,
       title: product.title,
       price: product.discountPrice || product.price,
+      originalPrice: product.price,
       quantity: 1,
       image: product.images[0],
     });

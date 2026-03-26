@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '@/lib/store';
 
@@ -17,13 +17,13 @@ export const useAuth = () => {
     }
   }, [dispatch, user]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     dispatch(logout());
-  };
+  }, [dispatch]);
 
-  const refreshUser = () => {
+  const refreshUser = useCallback(() => {
     return dispatch(getMe());
-  };
+  }, [dispatch]);
 
   return {
     user,

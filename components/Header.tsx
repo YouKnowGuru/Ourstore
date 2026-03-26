@@ -14,7 +14,8 @@ import {
   ArrowRight,
   Shield,
   LogIn,
-  UserPlus
+  UserPlus,
+  Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -218,6 +219,10 @@ const Header = () => {
                       <span className="font-medium">Admin Dashboard</span>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={() => router.push('/wallet')} className="rounded-xl hover:bg-saffron/5">
+                    <Wallet className="w-4 h-4 mr-3 text-saffron" />
+                    <span className="font-medium">My Wallet</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/orders')} className="rounded-xl hover:bg-saffron/5">
                     <ShoppingCart className="w-4 h-4 mr-3 text-saffron" />
                     <span className="font-medium">Order History</span>

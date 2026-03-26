@@ -213,7 +213,6 @@ const Home = () => {
                         title="Recommended for You"
                         subtitle="Personalized content based on your browsing history and preferences"
                         limit={6}
-                        showFilters={true}
                     />
                 </div>
             </section>
