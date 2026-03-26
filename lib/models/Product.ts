@@ -29,6 +29,15 @@ export interface IProduct extends Document {
     salesCount: number;
     metaTitle?: string;
     metaDescription?: string;
+    
+    // Recommendation system fields
+    subject: string; // Math, Science, English, etc.
+    contentType: 'course' | 'pdf' | 'video' | 'quiz' | 'material'; // Type of educational content
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    enrollments: number; // Number of users enrolled
+    views: number; // Number of views
+    bookmarks: number; // Number of bookmarks
+    
     createdAt: Date;
     updatedAt: Date;
 }
@@ -65,6 +74,32 @@ const productSchema = new Schema<IProduct>(
         salesCount: { type: Number, default: 0 },
         metaTitle: { type: String },
         metaDescription: { type: String },
+        
+        // Recommendation system fields
+        subject: {
+            type: String,
+            required: true,
+            default: 'General',
+            enum: ['Math', 'Science', 'English', 'History', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Art', 'Music', 'General'],
+            index: true
+        },
+        contentType: {
+            type: String,
+            required: true,
+            default: 'course',
+            enum: ['course', 'pdf', 'video', 'quiz', 'material'],
+            index: true
+        },
+        difficulty: {
+            type: String,
+            required: true,
+            default: 'beginner',
+            enum: ['beginner', 'intermediate', 'advanced'],
+            index: true
+        },
+        enrollments: { type: Number, default: 0, min: 0 },
+        views: { type: Number, default: 0, min: 0 },
+        bookmarks: { type: Number, default: 0, min: 0 },
     },
     { timestamps: true }
 );

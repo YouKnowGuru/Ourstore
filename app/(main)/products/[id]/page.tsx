@@ -30,6 +30,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useWishlist } from '@/lib/hooks/useWishlist';
 import { formatPrice, calculateDiscount } from '@/lib/helpers';
 import { toast } from 'sonner';
+import { SimilarProductsSection } from '@/components/SimilarProductsSection';
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -620,6 +621,18 @@ export default function ProductDetailPage() {
                             </div>
                         </TabsContent>
                     </Tabs>
+                    
+                    {/* You May Also Like Section */}
+                    {id && currentProduct && (
+                        <div className="mt-16 pt-10 border-t border-gray-100">
+                            <SimilarProductsSection
+                                productId={id}
+                                title="You May Also Like"
+                                subtitle="Similar products based on this item"
+                                limit={6}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

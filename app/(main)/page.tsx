@@ -12,6 +12,7 @@ import BackToTop from '@/components/BackToTop';
 import { CATEGORIES } from '@/lib/constants/categories';
 import { ModernTypingText } from '@/components/ModernTypingText';
 import ResumeBuilderBanner from '@/components/ResumeBuilderBanner';
+import { RecommendationSection } from '@/components/RecommendationSection';
 
 const Home = () => {
     const { featuredProducts, getFeaturedProducts } = useProducts();
@@ -202,6 +203,18 @@ const Home = () => {
                             <p className="text-muted-foreground">No featured products available</p>
                         </div>
                     )}
+                </div>
+            </section>
+
+            {/* Personalized Recommendations Section */}
+            <section className="py-10 bg-gradient-to-b from-white to-gray-50/50">
+                <div className="bhutan-container">
+                    <RecommendationSection
+                        title="Recommended for You"
+                        subtitle="Personalized content based on your browsing history and preferences"
+                        limit={6}
+                        showFilters={true}
+                    />
                 </div>
             </section>
 
