@@ -47,6 +47,8 @@ const AdminProducts = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
     const [imageItems, setImageItems] = useState<{ url: string; file?: File; isExisting?: boolean }[]>([]);
+    const [isNewCategory, setIsNewCategory] = useState(false);
+    const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
     const { register, handleSubmit, reset, setValue, control, watch, formState: { errors } } = useForm({
         resolver: zodResolver(productSchema),
@@ -72,7 +74,19 @@ const AdminProducts = () => {
 
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await productAPI.getCategories();
+            if (response.data && Array.isArray(response.data)) {
+                setDynamicCategories(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch categories');
+        }
+    };
 
     const fetchProducts = async () => {
         try {
@@ -179,6 +193,11 @@ const AdminProducts = () => {
 
         setIsAddDialogOpen(true);
     };
+
+    const allCategories = useMemo(() => {
+        const staticNames = CATEGORIES.map(c => c.name);
+        return Array.from(new Set([...staticNames, ...dynamicCategories]));
+    }, [dynamicCategories]);
 
     const handleView = (id: string) => {
         window.open(`/products/${id}`, '_blank');
@@ -303,18 +322,50 @@ const AdminProducts = () => {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="category" className="text-sm font-semibold uppercase tracking-wider text-gray-500">Category <span className="text-red-500">*</span></Label>
-                                                    <select
-                                                        id="category"
-                                                        className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                        {...register('category')}
-                                                    >
-                                                        <option value="">Select a category</option>
-                                                        {CATEGORIES.map((category) => (
-                                                            <option key={category.name} value={category.name}>
-                                                                {category.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    {isNewCategory ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Input 
+                                                                id="category" 
+                                                                placeholder="Enter new category name" 
+                                                                {...register('category')} 
+                                                                className="h-11 focus-visible:ring-saffron flex-1" 
+                                                                autoFocus
+                                                            />
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="outline" 
+                                                                onClick={() => {
+                                                                    setIsNewCategory(false);
+                                                                    setValue('category', '');
+                                                                }}
+                                                                className="h-11 px-3"
+                                                                title="Cancel adding new category"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <select
+                                                            id="category"
+                                                            className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                            {...register('category', {
+                                                                onChange: (e) => {
+                                                                    if (e.target.value === '__NEW__') {
+                                                                        setIsNewCategory(true);
+                                                                        setValue('category', '');
+                                                                    }
+                                                                }
+                                                            })}
+                                                        >
+                                                            <option value="">Select a category</option>
+                                                            {allCategories.map((catName) => (
+                                                                <option key={catName} value={catName}>
+                                                                    {catName}
+                                                                </option>
+                                                            ))}
+                                                            <option value="__NEW__" className="font-bold text-saffron">+ Add New Category</option>
+                                                        </select>
+                                                    )}
                                                     {errors.category && <p className="text-sm text-red-500 font-medium">{errors.category.message as string}</p>}
                                                 </div>
                                                 <div className="space-y-2">
