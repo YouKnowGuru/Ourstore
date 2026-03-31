@@ -1,4 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { useCallback } from 'react';
 import type { RootState, AppDispatch } from '@/lib/store';
 import {
   addItem,
@@ -20,33 +21,33 @@ export const useCart = () => {
   const count = useSelector(selectCartCount);
   const isOpen = useSelector((state: RootState) => state.cart.isOpen);
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = useCallback((item: CartItem) => {
     dispatch(addItem(item));
-  };
+  }, [dispatch]);
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = useCallback((productId: string) => {
     dispatch(removeItem(productId));
-  };
+  }, [dispatch]);
 
-  const updateItemQuantity = (productId: string, quantity: number) => {
+  const updateItemQuantity = useCallback((productId: string, quantity: number) => {
     dispatch(updateQuantity({ productId, quantity }));
-  };
+  }, [dispatch]);
 
-  const emptyCart = () => {
+  const emptyCart = useCallback(() => {
     dispatch(clearCart());
-  };
+  }, [dispatch]);
 
-  const toggleCartDrawer = () => {
+  const toggleCartDrawer = useCallback(() => {
     dispatch(toggleCart());
-  };
+  }, [dispatch]);
 
-  const openCart = () => {
+  const openCart = useCallback(() => {
     dispatch(setCartOpen(true));
-  };
+  }, [dispatch]);
 
-  const closeCart = () => {
+  const closeCart = useCallback(() => {
     dispatch(setCartOpen(false));
-  };
+  }, [dispatch]);
 
   return {
     items,

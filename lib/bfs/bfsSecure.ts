@@ -73,6 +73,18 @@ export function createARMessage(params: ARMessageParams) {
   // Sanitize payment description for BFS-allowed chars only
   const cleanPaymentDesc = sanitizePaymentDesc(paymentDesc);
 
+  // Validate required merchant credentials
+  if (!BFS_BENEFICIARY_ID || !BFS_BENEFICIARY_ID.trim()) {
+    throw new Error(
+      `BFS_BENEFICIARY_ID is not configured. Check your .env.local file. Current value: "${BFS_BENEFICIARY_ID}"`
+    );
+  }
+  if (!BFS_BANK_CODE || !BFS_BANK_CODE.trim()) {
+    throw new Error(
+      `BFS_BANK_CODE is not configured. Check your .env.local file. Current value: "${BFS_BANK_CODE}"`
+    );
+  }
+
   // Build field map (excluding checksum – added after signing)
   // NOTE: bfs_returnUrl is NOT included — BFS rejects extra/unexpected fields
   const fields: Record<string, string> = {

@@ -18,6 +18,16 @@ export const BFS_BENEFICIARY_ID = process.env.BFS_BENEFICIARY_ID || '';
 export const BFS_BANK_CODE = process.env.BFS_BANK_CODE || '';
 export const BFS_VERSION = process.env.BFS_VERSION || '1.0';
 
+// Validation warnings (only in development)
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  if (!BFS_BENEFICIARY_ID) {
+    console.warn('[BFS] ⚠️  BFS_BENEFICIARY_ID is empty. Check your .env.local file.');
+  }
+  if (!BFS_BANK_CODE) {
+    console.warn('[BFS] ⚠️  BFS_BANK_CODE is empty. Check your .env.local file.');
+  }
+}
+
 // ── Key Paths ───────────────────────────────────────────────────────
 export const BFS_PRIVATE_KEY_PATH = process.env.BFS_PRIVATE_KEY_PATH || './keys/merchant_private.pem';
 export const BFS_PUBLIC_KEY_PATH = process.env.BFS_PUBLIC_KEY_PATH || './keys/bfs_public.pem';
