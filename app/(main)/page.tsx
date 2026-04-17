@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Shield, Truck, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,44 @@ import BackToTop from '@/components/BackToTop';
 import { CATEGORIES } from '@/lib/constants/categories';
 import { ModernTypingText } from '@/components/ModernTypingText';
 import ResumeBuilderBanner from '@/components/ResumeBuilderBanner';
+import DailyDeals from '@/components/DailyDeals';
+import CategoryCircles from '@/components/CategoryCircles';
+import PromoGrid from '@/components/PromoGrid';
 import { RecommendationSection } from '@/components/RecommendationSection';
+import axios from 'axios';
 
 const Home = () => {
-    const { featuredProducts, getFeaturedProducts } = useProducts();
+    const { featuredProducts, getFeaturedProducts, getCategories, loading } = useProducts();
+    const [circleCategories, setCircleCategories] = useState<any[]>([]);
+    const [mainBanner, setMainBanner] = useState<any>(null);
+    const [sideBanners, setSideBanners] = useState<any[]>([]);
 
     useEffect(() => {
         getFeaturedProducts();
+        getCategories();
+        
+        // Fetch circular categories with images
+        axios.get('/api/categories')
+            .then(res => setCircleCategories(res.data))
+            .catch(err => console.error('Categories fetch error:', err));
+        
+        // Fetch banners
+        axios.get('/api/banners')
+            .then(res => {
+                if (res.data && res.data.length > 0) {
+                    const main = res.data.find((b: any) => b.position === 'home-main') || res.data[0];
+                    let sides = res.data.filter((b: any) => b.position === 'home-side');
+                    
+                    if (sides.length === 0 && res.data.length > 1) {
+                        sides = res.data.filter((b: any) => b._id !== main._id);
+                    }
+                    
+                    setMainBanner(main);
+                    setSideBanners(sides.slice(0, 4));
+                }
+            })
+            .catch(err => console.error('Banner fetch error:', err));
+        
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -45,7 +76,7 @@ const Home = () => {
         },
     ];
 
-    const categories = CATEGORIES;
+    const homeCategories = CATEGORIES;
 
     return (
         <div className="pt-12">
@@ -130,7 +161,24 @@ const Home = () => {
                 </div>
             </section>
 
-            <ResumeBuilderBanner />
+            {/* Circular Category Navigation */}
+            <div className="bg-white border-b border-gray-100">
+                <div className="bhutan-container">
+                    <CategoryCircles categories={circleCategories} loading={loading && circleCategories.length === 0} />
+                </div>
+            </div>
+
+            <div className="bhutan-container">
+                {/* Main Promo & 2x2 Grid Section */}
+
+                {mainBanner && (
+                    <PromoGrid 
+                        banner={mainBanner} 
+                        sideBanners={sideBanners} 
+                        loading={loading} 
+                    />
+                )}
+            </div>
 
             {/* Categories Section */}
             <section className="py-10 bg-white mandala-pattern">
@@ -145,7 +193,7 @@ const Home = () => {
                     </div>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {categories.map((category, index) => (
+                        {homeCategories.map((category, index) => (
                             <Link
                                 key={category.name}
                                 href={category.href}
@@ -217,6 +265,7 @@ const Home = () => {
                 </div>
             </section>
 
+            <ResumeBuilderBanner />
             {/* Features Section */}
             <section className="py-12 bg-gradient-to-b from-white to-bhutan-cream/30 relative overflow-hidden">
                 {/* SVG Gradients for Features */}

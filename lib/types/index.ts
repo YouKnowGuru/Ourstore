@@ -96,7 +96,7 @@ export interface Order {
     phone: string;
   };
   isGuest: boolean;
-  paymentMethod: 'COD' | 'Online';
+  paymentMethod: 'COD';
   paymentStatus: 'Pending' | 'Completed' | 'Failed' | 'Refunded';
   orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   subtotal: number;

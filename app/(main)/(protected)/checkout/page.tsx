@@ -32,7 +32,7 @@ const Checkout = () => {
 
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Online'>('COD');
+    const [paymentMethod] = useState<'COD'>('COD');
     const [useWalletBalance, setUseWalletBalance] = useState(false);
     const [walletDiscount, setWalletDiscount] = useState(0);
 
@@ -159,58 +159,6 @@ const Checkout = () => {
             }).unwrap();
 
             const orderId = result.order._id;
-
-            // ── BFS Online Payment Flow ───────────────────────────
-            if (paymentMethod === 'Online') {
-                try {
-                    console.log('[BFS] Initiating payment for order:', orderId);
-                    const payRes = await fetch('/api/payment/create', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            orderId,
-                            remitterEmail: user?.email || '',
-                        }),
-                    });
-
-                    if (!payRes.ok) {
-                        const errData = await payRes.json().catch(() => ({}));
-                        throw new Error(errData.message || 'Failed to initiate payment');
-                    }
-
-                    const payData = await payRes.json();
-                    const { fields, paymentUrl } = payData;
-                    
-                    console.log('[BFS-FE-V3] Gateway URL:', paymentUrl);
-                    console.log('[BFS-FE-V3] Fields:', fields);
-
-                    // Create and submit a hidden POST form directly — DO NOT pass via URL params
-                    // URL encoding corrupts base64 checksum characters (+, /, =)
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = paymentUrl;
-                    form.style.display = 'none';
-
-                    Object.entries(fields).forEach(([name, value]) => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = name;
-                        input.value = value as string;
-                        form.appendChild(input);
-                    });
-
-                    document.body.appendChild(form);
-                    console.log('[BFS-FE-V3] Submitting POST form directly to BFS...');
-                    form.submit();
-                    return;
-                } catch (payErr: unknown) {
-                    const e = payErr as Error;
-                    console.error('[BFS] Redirect error:', e);
-                    toast.error(e.message || 'Payment gateway error. Please try again.');
-                    setIsProcessing(false);
-                    return;
-                }
-            }
 
             // ── COD Flow ─────────────────────────────────────────
             console.log('[COD] Order successful, clearing cart');
@@ -450,59 +398,43 @@ const Checkout = () => {
                                         <div className="w-12 h-1 bg-gradient-to-r from-saffron to-maroon rounded-full" />
                                     </div>
 
-                                    <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'COD' | 'Online')}>
-                                        <div className="grid gap-3 sm:gap-4">
-                                            {[
-                                                { id: 'COD', title: 'Cash on Delivery', desc: 'Securely pay upon delivery', icon: Truck, color: 'emerald' },
-                                                { id: 'Online', title: 'Online Payment', desc: 'Pay instantly via Banking/QR', icon: CreditCard, color: 'blue' }
-                                            ].map((item) => (
-                                                <label
-                                                    key={item.id}
-                                                    className={`group relative flex items-center gap-3 sm:gap-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 cursor-pointer transition-all duration-500 ${paymentMethod === item.id
-                                                        ? `border-${item.color === 'emerald' ? 'green' : 'blue'}-500 bg-${item.color === 'emerald' ? 'green' : 'blue'}-50 shadow-xl`
-                                                        : 'border-gray-50 bg-gray-50/30 hover:bg-white hover:border-gray-200'
-                                                        }`}
-                                                >
-                                                    <RadioGroupItem value={item.id} className="sr-only" />
-                                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 ${paymentMethod === item.id ? `bg-${item.color === 'emerald' ? 'green' : 'blue'}-500 text-white rotate-6` : 'bg-white text-gray-400 group-hover:rotate-3'}`}>
-                                                        <item.icon className="w-5 h-5 sm:w-7 sm:h-7" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-black text-sm sm:text-base text-gray-900 truncate">{item.title}</p>
-                                                        <p className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-tight truncate">{item.desc}</p>
-                                                    </div>
-                                                    <div className={`w-5 h-5 sm:w-6 sm:h-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === item.id ? `border-${item.color === 'emerald' ? 'green' : 'blue'}-500 bg-${item.color === 'emerald' ? 'green' : 'blue'}-500` : 'border-gray-200'}`}>
-                                                        {paymentMethod === item.id && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />}
-                                                    </div>
-                                                </label>
-                                            ))}
+                                    <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-emerald-50 shadow-xl flex items-center gap-5">
+                                        <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center rotate-6">
+                                            <Truck className="w-7 h-7" />
                                         </div>
-                                    </RadioGroup>
+                                        <div>
+                                            <p className="font-black text-base text-gray-900">Cash on Delivery</p>
+                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-tight">Pay securely upon delivery</p>
+                                        </div>
+                                        <div className="ml-auto w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                                            <div className="w-2 h-2 rounded-full bg-white" />
+                                        </div>
+                                    </div>
 
-                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                                         <Button
                                             variant="outline"
                                             onClick={() => setStep(1)}
-                                            className="h-12 sm:h-14 px-8 rounded-xl sm:rounded-2xl border-gray-200 font-bold hover:bg-gray-50 w-full sm:w-auto"
+                                            className="h-14 px-8 rounded-2xl border-gray-200 font-bold hover:bg-gray-50 w-full sm:w-auto"
                                         >
                                             Back to Shipping
                                         </Button>
                                         <Button
-                                            className="flex-1 h-12 sm:h-14 bg-gradient-to-r from-saffron to-saffron-600 hover:scale-[1.02] text-white rounded-xl sm:rounded-2xl font-black shadow-xl transition-all duration-500 w-full"
+                                            className="flex-1 h-14 bg-gradient-to-r from-saffron to-saffron-600 hover:scale-[1.02] text-white rounded-2xl font-black shadow-xl transition-all duration-500 w-full"
                                             onClick={handlePlaceOrder}
                                             disabled={isProcessing}
                                         >
-                                            {isProcessing ? 'Securing Transaction...' : 'Place My Order Now'}
+                                            {isProcessing ? 'Processing Order...' : 'Confirm Order'}
                                         </Button>
                                     </div>
                                 </div>
 
-                                <div className="bg-amber-50 border border-amber-100 p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex items-start gap-3 sm:gap-4">
+                                <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex items-start gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                                         <CheckCircle className="w-5 h-5 text-amber-600" />
                                     </div>
                                     <p className="text-sm text-amber-800 font-medium leading-relaxed">
-                                        By placing this order, you agree to our <span className="underline font-black cursor-pointer">Terms of Service</span>. Your transaction is secured with 256-bit encryption.
+                                        By placing this order, you agree to our <span className="underline font-black cursor-pointer">Terms of Service</span>. Your order will be confirmed and processed immediately.
                                     </p>
                                 </div>
                             </div>

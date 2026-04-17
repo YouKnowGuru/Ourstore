@@ -73,7 +73,7 @@ const OrderSuccessContent = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Payment Method</p>
-                                <p className="font-medium">{order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}</p>
+                                <p className="font-medium">Cash on Delivery</p>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Total Amount</p>

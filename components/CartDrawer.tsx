@@ -184,11 +184,6 @@ const CartDrawer = () => {
                                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </div>
-
-                            <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
-                                <ShieldCheck className="w-3 h-3" />
-                                <span>Secure checkout by RMA payment Gateway</span>
-                            </div>
                         </div>
                     </>
                 )}

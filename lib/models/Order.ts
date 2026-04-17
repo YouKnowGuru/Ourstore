@@ -35,7 +35,7 @@ export interface IOrder extends Document {
         phone?: string;
     };
     isGuest: boolean;
-    paymentMethod: 'COD' | 'Online';
+    paymentMethod: 'COD';
     paymentStatus: 'Pending' | 'Completed' | 'Failed' | 'Refunded';
     orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
     subtotal: number;
@@ -45,7 +45,7 @@ export interface IOrder extends Document {
     total: number;
     notes?: string;
     trackingNumber?: string;
-    bfsTransactionId?: mongoose.Types.ObjectId;
+
     createdAt: Date;
     updatedAt: Date;
 }
@@ -88,7 +88,7 @@ const orderSchema = new Schema<IOrder>(
             phone: { type: String },
         },
         isGuest: { type: Boolean, default: false },
-        paymentMethod: { type: String, enum: ['COD', 'Online'], required: true },
+        paymentMethod: { type: String, enum: ['COD'], default: 'COD', required: true },
         paymentStatus: { type: String, enum: ['Pending', 'Completed', 'Failed', 'Refunded'], default: 'Pending' },
         orderStatus: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
         subtotal: { type: Number, required: true },
@@ -98,7 +98,6 @@ const orderSchema = new Schema<IOrder>(
         total: { type: Number, required: true },
         notes: { type: String },
         trackingNumber: { type: String },
-        bfsTransactionId: { type: Schema.Types.ObjectId, ref: 'BfsTransaction' },
     },
     { timestamps: true }
 );
